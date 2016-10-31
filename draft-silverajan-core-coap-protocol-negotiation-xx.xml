@@ -10,6 +10,8 @@
 <!ENTITY RFC7228 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7228.xml">
 <!ENTITY RFC7252 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7252.xml">
 <!ENTITY RFC7641 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7641.xml">
+<!ENTITY I-D.ietf-core-resource-directory SYSTEM
+'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-core-resource-directory'>
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <!-- used by XSLT processors -->
@@ -37,7 +39,7 @@
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
 
-<rfc category="info" docName="draft-silverajan-core-coap-protocol-negotiation-03" ipr="trust200902">
+<rfc category="info" docName="draft-silverajan-core-coap-protocol-negotiation-04" ipr="trust200902">
  <!-- category values: std, bcp, info, exp, and historic
     ipr values: trust200902, noModificationTrust200902, noDerivativesTrust200902,
        or pre5378Trust200902
@@ -71,7 +73,7 @@ full title is longer than 39 characters -->
   <address>
   <postal>
    <street>Hirsilantie 11</street>
-   <code>02420 Jorvase</code>
+   <code>02420 Jorvas</code>
    <country>Finland</country>
   </postal>
   <email>mert.ocak@ericsson.com</email>
@@ -96,7 +98,7 @@ full title is longer than 39 characters -->
   When multiple transport protocols exist for exchanging CoAP resource
   representations, this document introduces a way forward for CoAP endpoints as
   well as intermediaries to agree upon alternate transport and protocol
-  configurations as well as URIs for CoAP messaging.
+  configurations as well as URIs for CoAP messaging, using the CoRE Resource Directory.
   </t>
  </abstract>
 </front>
@@ -167,11 +169,14 @@ full title is longer than 39 characters -->
 
    <t><list style="symbols">
     <t>An ability for servers to register supported CoAP transports to a CoRE
-    Resource Directory with optional registration lifetime values</t>
+    Resource Directory <xref
+     target="I-D.ietf-core-resource-directory"/>with optional registration lifetime values</t>
 
     <t>A means for CoAP clients to interact with a CoRE resource directory
     interface for requesting and discovering alternative transports and
     locations of CoAP resources</t>
+    
+    <t>New Resource Directory parameter types enabling the above-mentioned features.</t>
 
    </list></t>
 
@@ -276,7 +281,7 @@ full title is longer than 39 characters -->
     representation to the HTTP client as well (arrow 4).</t>
    </section>
 
-<!--
+<!-- To be added once a suitable enabler is found to allow clients to ask server
    <section title="Interaction with Energy-constrained Servers">
 
     <t><xref target="using-sms"/> illustrates discovery and communication
@@ -359,207 +364,124 @@ full title is longer than 39 characters -->
    other, are a good example of this.</t>
 
    </section>
+<section title="New Resource Directory Parameters">
+  <t>In order to allow resource interactions between clients and servers with multiple
+    locations or transports, the registration, update and lookup interfaces of
+    the CoRE Resource Directory need to be extended. In this section two new RD
+    parameters, "at" and "tt" are introduced. Both are optional CoAP features.
+    If supported, they occur at the granularity level of an origin server, ie.
+    they cannot be applied selectively on some resources only. When absent, it
+    is assumed that the the server does not support multiple transports or
+    locations.</t>
+ 
+ <section title="The 'at' RD parameter">
+  <t>A CoAP server wishing to advertise its resources over multiple transports
+  does so by using a new "at" parameter to register a list of CoAP alternative
+  transport URIs during registration with a Resource Directory. Such a URI would
+  contain the schemes, addresses as well as any ports or paths at which the server is available.</t>
+ 
+        <figure>
+           <artwork><![CDATA[
+ 
+   +-----------+-------+---------------+-------------------------------+
+   | Name      | Query | Validity      | Description                   |
+   +-----------+-------+---------------+-------------------------------+
+   | CoAP      | at    |               | Comma separated list of URIs  |
+   | Transport |       |               | (scheme, address, port, and   |
+   | URI List  |       |               | path) available at the server |
+   +-----------+-------+---------------+-------------------------------+  
 
- <section title="New Link Attribute and Relation types">
-   <t>A CoAP server wishing to allow interactions with resources from multiple
-    locations or transports can do so by specifying the Transport Type "tt" link
-    attribute, which is an opaque string. Multiple transport types can be
-    included in the value of this parameter, each separated by a space. In such
-    cases, transport types appear in a prioritised list, with the most preferred
-    transport type by the CoAP server specified first and the lowest priority
-    transport type last.</t>
-    
-   <t>At the same time, each transport type supported
-    by the server is also described with an "altloc" link relation type. The
-    "altloc" relation type specifices a URI (containing the URI scheme,
-    authority and optionally path) providing an alternate endpoint location up
-    to but not including the resource path of a representation.</t>
-    
-   <t>Each URI specified by "altloc" link relation type can also have an active
-    lifetime value described with "al" link extension, which is an integer
-    showing the active lifetime in seconds. The "al" link extension specifies
-    how long the CoAP server will respond to the specified URI in "altloc"
-    relation type.</t>
-   
-   <t>Both "tt" and "altloc" are optional CoAP features. If
-    supported, they occur at the granularity level of an origin server, ie. they
-    cannot be applied selectively on some resources only. Therefore "altloc" is
-    always anchored at the root resource ("/"). The "al" link attribute, while
-    also being optional, exists at the granularity of each transport protocol
-    used. When it is absent, it is assumed that the transport protocol is
-    persistent.</t>
-   
-   <t>Additionally, the "tt" and "al" link attributes as well
-    as the "altloc" relation type can be ignored by unsupported CoAP
-    clients.</t>
-    
- </section>
- <section title="Observing Transport Types and Resource Representations">
-   <t>A CoAP client interested in being notified of changes in an origin
-   server's transport protocols for CoAP, can choose to do so with an Observe
-   relationship <xref target="RFC7641"/>. The client registers its interest on
-   the available active transports by setting the Observe option with a GET to
-   ".well-known/core" on a CoAP server, with a client-specified parameter value
-   for "tt" as depicted in <xref target="obs-core"/>. Updates on the active
-   transports will be sent to the CoAP client as CoAP notifications.</t>
-   
-         <figure align="center"
-                anchor="obs-core"
-                title="CoAP client observing .well-known/core for all transport types">
-          <artwork type="drawing" align="center">
-            <![CDATA[
+ Table 2: The "at" RD parameter
+ 
+         ]]></artwork></figure>
 
-Client                         Server
-   |                              |
-   |  GET /.well-known/core?tt=*  |
-   |    Token: 0x7a               |   Registration
-   |  Observe: 0                  |
-   +----------------------------->|
-   |                              |
-   |    2.05 Content              |
-   |    Token: 0x7a               |   Notification of
-   |  Observe: 18                 |   transport type
-   |  Payload: "udp sms"          |
-   |<-----------------------------+
-   |                              |
-   |    2.05 Content              |
-   |    Token: 0x7a               |   Notification of new
-   |  Observe: 32                 |   transport
-   |  Payload: "udp sms tcp"      |
-   |<-----------------------------+
-   |                              |
-   |    2.05 Content              |
-   |    Token: 0x7a               |   Notification of
-   |  Observe: 56                 |   transport type
-   |  Payload: "udp sms"          |
-   |<-----------------------------+
+ <t>The "at" parameter extends the Resource Directory's Registration and Update interfaces.</t>
+ 
+  <t>The following example shows an endpoint registering its resources and advertising its ability to use TCP as an alternative transport:</t>
+ 
+         <figure>
+           <artwork><![CDATA[
 
-]]>
-          </artwork>
-        </figure>
+   Req: POST coap:/rd.example.com/rd
+    ?ep=node1&at="coap+tcp://server.example.com, coap+ws://server.example.com:5683/ws/"
+   Content-Format: 40
+   Payload:
+   </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
+   </sensors/door>;ct=41;rt="door";if="sensor"
 
-   <t>Observe relationships between a CoAP client and a CoAP server must conform
-   to established norms specified in <xref target="RFC7641"/>. Subsequent
-   notifications are considered to simply be additional responses to the
-   original client GET request. Therefore, should a client subsequently switch
-   to a different transport protocol (such as from UDP to TCP), it is the
-   responsibility of the client to deregister its interest beforehand or cancel
-   its interest as specified in section 3.6 of <xref target="RFC7641"/>. No
-   assumptions of session continuation should be made and the client should
-   instead re-register its interest using the new transport, either actively, or
-   upon the Max-Age of a stored representation being exceeded at the client.</t>
+   Res: 2.01 Created
+   Location: /rd/4521
+         ]]></artwork></figure>
 
-   <t>A server can also prevent notifications to be perpetually sent to a client
-   on a previous transport, by using confirmable CoAP messages for responses.
-   This allows the server to remove an unresponsive client from its list of
-   interested observers.</t>
+ 
+ <t>The next example shows the same endpoint updating its registration with a new lifetime and the availability of a single alternative transport for CoAP (in this case WebSockets):</t>
+ 
+         <figure>
+           <artwork><![CDATA[
+
+   Req: POST /rd/4521?lt=600&at="coap+ws://server.example.com:5683/ws/"
+   Content-Format: 40
+   Payload:
+   </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
+   </sensors/door>;ct=41;rt="door";if="sensor"
+
+   Res: 2.04 Changed
+         ]]></artwork></figure>
+
  </section>
  
- <section title="Examples">
-    
-   <t><xref target="example1"/> shows a CoAP server returning all transport
-   types and the alternate resource locations to a CoAP client performing a CoAP
-   Request to ./well-known/core</t>
+ <section title="The 'tt' RD parameter">
+  <t>A CoAP client wishing to perform a look-up on the Resource Directory for CoAP servers supporting multiple transports does so by using a new "tt" parameter to query for CoAP alternative
+  transport URIs.</t>
+ 
+        <figure>
+           <artwork><![CDATA[
+ 
+   +-----------+-------+---------------+-------------------------------+
+   | Name      | Query | Validity      | Description                   |
+   +-----------+-------+---------------+-------------------------------+
+   | CoAP      | tt    |               | Transport type                |
+   | Transport |       |               | requested by                  |
+   | Type      |       |               | the client                    |
+   +-----------+-------+---------------+-------------------------------+  
 
-   <t>In this case, the server supplies two different locations to interact with
-   resources using CoAP over TCP i.e. the resources given in the CoAP response
-   are available from multiple hosts with different entry points and transport
-   layer security.</t>
+ Table 3: The "tt" RD parameter
+ 
+         ]]></artwork></figure>
 
-   <t>At the same time, the path to the WebSocket endpoint is provided in
-   addition to the FQDN of the server, for using CoAP over WebSockets,
-   exemplifying the ability to separate a CoAP resource path from a web-based
-   CoAP endpoint path in a URI.</t>
+ <t>The "tt" parameter extends the Resource Directory's rd-lookup interface.</t>
+ <t>The following example shows a client performing a lookup for endpoints supporting TCP:</t>
+        <figure>
+           <artwork><![CDATA[
 
-        <figure align="center" anchor="example1" title="Example of Server
-        response">
-          <artwork type="drawing">
-            <![CDATA[
+   Req: GET /rd-lookup/ep?tt=tcp
 
-REQ: GET /.well-known/core
+   Res: 2.05 Content
+   <coap+tcp://[FDFD::123]:61616>;ep="node5",
+   <coap+tcp://[FDFD::123]:61616>;ep="node7"
 
-RES: 2.05 Content
-</sensors>;ct=40;title="Sensor Index", tt="tcp ws sms",
-</sensors/temp>;rt="temperature-c";if="sensor",
-</sensors/light>;rt="light-lux";if="sensor",
-<coap+tcp://server.example.com/>;rel="altloc",
-<coaps+tcp://server.example.net/>;rel="altloc",
-<coap+ws://server.example.com/ws-endpoint/>;rel="altloc",
-<coap+sms://001234567>;rel="altloc"
-]]>
-          </artwork>
-        </figure>
+         ]]></artwork></figure>
 
-   <t><xref target="example2"/> shows a CoAP client actively soliciting a CoAP
-   server for all supported transport types and protocol configurations.</t>
+ <t>The next example shows a client performing a lookup for all transports supported by a specific endpoint:</t>
+        <figure>
+           <artwork><![CDATA[
 
-        <figure align="center" anchor="example2" title="CoAP client discovering
-        transports supported by a CoAP server.">
-          <artwork type="drawing">
-            <![CDATA[
-REQ: GET /.well-known/core?tt=*
+   Req: GET /rd-lookup/ep?ep="node5"&tt=*
 
-RES: 2.05 Content
-</sensors>;tt="tcp sms ws"
-<coap+tcp://server.example.com/>;rel="altloc",
-<coap+tcp://server.example.net/>;rel="altloc",
-<coap+ws://server.example.com/ws-endpoint/>;rel="altloc",
-<coap+sms://001234567/>;rel="altloc"
-]]>
-          </artwork>
-        </figure>
+   Res: 2.05 Content
+   <coap+tcp://[FDFD::123]:61616>;ep="node5",
+   <coap+ws://[FDFD::123]:61616>;ep="node5"
 
-   <t><xref target="example3"/> shows a CoAP client explicitly soliciting
-   support for a specific transport type using a query filter parameter.</t>
-        
-        <figure align="center" anchor="example3" title="CoAP client looking for
-        a specific transport to use with a CoAP server.">
-
-          <artwork type="drawing">
-            <![CDATA[
-REQ: GET /.well-known/core?tt=sms
-
-RES: 2.05 Content
-</sensors>;tt="tcp sms ws"
-<coap+sms://001234567/>;rel="altloc"
-]]>
-          </artwork>
-        </figure>
-
-   <t><xref target="example4"/> shows a CoAP client making a CoAP over SMS
-   request to an energy-constrained CoAP server, explicitly soliciting support
-   for UDP-based communication by using a query filter parameter. The server
-   temporarily activates its UDP interface, responds with the location of the
-   UDP endpoint and also provides the expected lifetime of the transport, which
-   in this case is 120 seconds.</t>
-
-        <figure align="center" anchor="example4" title="CoAP client using CoAP
-        over SMS to discover UDP-based address and transport lifetime.">
-
-          <artwork type="drawing">
-            <![CDATA[
-REQ: GET /.well-known/core?tt=udp
-
-RES: 2.05 Content
-</sensors>;tt="udp sms"
-<coap://server.example.com/>;rel="altloc";al=120
-]]>
-          </artwork>
-        </figure>
-
-
-
+         ]]></artwork></figure>
+ 
  </section>
- <section anchor="IANA" title="IANA Considerations">
+ </section>
+  
+ 
+<section anchor="IANA" title="IANA Considerations">
 
-   <t>This document requests the registration of a new link relation type
-   "altloc".
-    <list style="hanging">
-      <t hangText="Relation name:"><vspace/>altloc</t>
-      <t hangText="Description:"><vspace/>Identifies an alternate CoAP endpoint
-      location for a resource.</t>
-      <t hangText="Reference:"><vspace/>This document.</t> 
-    </list>
+   <t>This document requests the registration of new RD parameter types
+   "at" and "tt".
    </t>
 
  </section>
@@ -593,7 +515,8 @@ RES: 2.05 Content
  <section anchor="Acknowledgements" title="Acknowledgements">
    <t>Thanks to Klaus Hartke for comments and reviewing this draft, and Teemu
    Savolainen for initial discussions about protocol negotations and lifetime
-   values.</t>
+   values. Zach Shelby provided significant suggestions on how the Resource
+   Directory can be employed.</t>
  </section>
 </middle>
 
@@ -604,6 +527,7 @@ RES: 2.05 Content
    &RFC7228;
    &RFC7252;
    &RFC7641;
+   &I-D.ietf-core-resource-directory;
  </references>
  <references title="Informative References">
    
@@ -631,6 +555,10 @@ RES: 2.05 Content
   </references>
 
  <section title="Change Log">
+<section title="From -03 to -04">
+ <t>Removed previously introduced link attribute and relation types</t>
+ <t>Initial foray with Resource Directory support</t>
+</section> 
   <section title="From -02 to -03">
    <t>Added new author</t>
    <t>Rewrite of "Introduction" section</t>
