@@ -72,7 +72,7 @@ full title is longer than 39 characters -->
   <organization abbrev="Ericsson">Ericsson</organization>
   <address>
   <postal>
-   <street>Hirsilantie 11</street>
+   <street>Hirsalantie 11</street>
    <code>02420 Jorvas</code>
    <country>Finland</country>
   </postal>
@@ -109,7 +109,7 @@ full title is longer than 39 characters -->
 
    <t>The Constrained Application Protocol (CoAP) <xref target="RFC7252"/>
    allows clients, origin servers and proxies, to exchange and manipulate
-   resource representations using REST-based methods using UDP or DTLS. CoAP
+   resource representations using REST-based methods over UDP or DTLS. CoAP
    messaging is however being extended to use other alternative underlying
    transports. These include reliable transports such as TCP, WebSockets and
    TLS. In addition, the use of SMS as a CoAP transport remains a
@@ -170,7 +170,7 @@ full title is longer than 39 characters -->
    <t><list style="symbols">
     <t>An ability for servers to register supported CoAP transports to a CoRE
     Resource Directory <xref
-     target="I-D.ietf-core-resource-directory"/>with optional registration lifetime values</t>
+     target="I-D.ietf-core-resource-directory"/> with optional registration lifetime values</t>
 
     <t>A means for CoAP clients to interact with a CoRE resource directory
     interface for requesting and discovering alternative transports and
@@ -371,7 +371,7 @@ full title is longer than 39 characters -->
     parameters, "at" and "tt" are introduced. Both are optional CoAP features.
     If supported, they occur at the granularity level of an origin server, ie.
     they cannot be applied selectively on some resources only. When absent, it
-    is assumed that the the server does not support multiple transports or
+    is assumed that the server does not support multiple transports or
     locations.</t>
  
  <section title="The 'at' RD parameter">
@@ -466,7 +466,7 @@ full title is longer than 39 characters -->
         <figure>
            <artwork><![CDATA[
 
-   Req: GET /rd-lookup/ep?ep="node5"&tt=*
+   Req: GET /rd-lookup/ep?ep=node5&tt=*
 
    Res: 2.05 Content
    <coap+tcp://[FDFD::123]:61616>;ep="node5",
