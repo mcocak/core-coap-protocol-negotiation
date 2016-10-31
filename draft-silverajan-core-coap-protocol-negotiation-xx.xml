@@ -386,7 +386,7 @@ full title is longer than 39 characters -->
    +-----------+-------+---------------+-------------------------------+
    | Name      | Query | Validity      | Description                   |
    +-----------+-------+---------------+-------------------------------+
-   | CoAP      | at    |               | Comma separated list of URIs  |
+   | CoAP      | at    |     URI       | Comma separated list of URIs  |
    | Transport |       |               | (scheme, address, port, and   |
    | URI List  |       |               | path) available at the server |
    +-----------+-------+---------------+-------------------------------+  
