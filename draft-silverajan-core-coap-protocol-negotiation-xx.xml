@@ -166,20 +166,16 @@ full title is longer than 39 characters -->
    over multiple transports, this draft proposes the following:</t>
 
    <t><list style="symbols">
-    <t>A means for CoAP clients to interact with an origin server's CoRE
-    resource directory interface to discover alternative transports and links
-    describing alternate locations of CoAP resources.</t>
-    
-    <t>An ability for servers to convey the names of supported CoAP transports
-    to requesting clients, in order of preference, as well as any optional
-    lifetime values associated with them.</t>
+    <t>An ability for servers to register supported CoAP transports to a CoRE
+    Resource Directory with optional registration lifetime values</t>
 
-    <t>A new link format attribute as well as a new link relation type that
-    together enable an origin server to serve a resource from other protocol
-    configurations or endpoints.</t>
+    <t>A means for CoAP clients to interact with a CoRE resource directory
+    interface for requesting and discovering alternative transports and
+    locations of CoAP resources</t>
 
    </list></t>
 
+<t>(Note: Although previous versions of this draft provided a mechanism for CoAP clients to directly interact with, discover, use and possibly even negotiate an alternative transport for CoAP-based communication directly with an origin server, discussions at the CoRE Working Group yielded new insights about problems with the proposed approach [CoREWG96]. The current version consequently adopts the usage of the CoRE Resource Directory. Future work is planned on performing discovery and negotiation without the RD as well.)</t>
  </section>
 
  <section title="Aim">
@@ -200,25 +196,34 @@ full title is longer than 39 characters -->
           <artwork type="drawing" align="center">
             <![CDATA[
 
-+-------------+-----+      +---+      +-----+-------------+
-|             |     |--1-->|   |--1-->|     |             |
+                                           +-----------+
+                                           | Resource  |
+                                    +--4-->| Directory |
+                                    |      +-----------+
+                           +---+    |            ^
+                 +----4--->|   |<---+   +---1----+
++-------------+--V--+      |   |      +-V-----------------+ 
+|             |     |--2-->|   |--2-->|     |             |
 |             | UDP |      | N |      | UDP |             |
-|             |     |<--2--|   |<--2--|     |             |
+|             |     |<--3--|   |<--3--|     |             |
 | CoAP Client +-----+      | A |      +-----+ CoAP Server |
-|             |     |--3-->|   |--3-->|     |             |
+|             |     |--5-->|   |--5-->|     |             |
 |             | TCP |      | T |      | TCP |             |
-|             |     |<--4--|   |<--4--|     |             |
+|             |     |<--6--|   |<--6--|     |             |
 +-------------+-----+      +---+      +-----+-------------+
 
 ]]>
           </artwork>
         </figure>
 
-    <t><xref target="NAT-TCP"/> depicts such a scenario, where a CoAP client
-    uses UDP initially for accessing a CoAP Server, and engages in discovering
-    alternative transports offered by the server. The client subsequently
-    decides to use TCP for CoAP messaging instead of UDP to set up an Observe
-    relationship for a resource at the CoAP Server, in order to avoid incoming
+    <t><xref target="NAT-TCP"/> depicts such a scenario. Step 1 depicts the CoAP
+    Server registering its transports to a Resource Directory. A CoAP client
+    uses UDP initially for accessing a CoAP Server in Step 2 and receives a
+    response in Step 3. Subsequently the client performs a lookup on the
+    Resource Directory in Step 4 to discover alternative transports offered by
+    the server. Steps 5 and 6 illustrate the client then deciding to use TCP for
+    CoAP messaging instead of UDP to set up an Observe relationship for a
+    resource at the CoAP Server, in order to avoid incoming
     packets containing resource updates being discarded by the NAT.</t>
 
    </section>
@@ -227,7 +232,10 @@ full title is longer than 39 characters -->
     <t><xref target="proxy-caching"/> outlines a more complex example of
     intermediate nodes such as CoAP-based proxies to intelligently cache and
     respond to CoAP or HTTP clients with the same resource representation
-    requested over alternative transports or server endpoints.</t>
+    requested over alternative transports or server endpoints. As with the
+    earlier example, the CoAP Server registers its transports to a Resource
+    Directory (This is assumed to be performed beforehand and not depicted in
+    the figure, for brevity)</t>
 
     <t>In this example, a CoAP over WebSockets client successfully obtains a
     response from a CoAP forward proxy to retrieve a resource representation
@@ -247,10 +255,10 @@ full title is longer than 39 characters -->
  +---------+
  | CoAP+WS |     +--------+-------+---+     +-----+---------+
  | Client  |<-1->|  Web   |       |   |<-2->|     |         |
- +---------+     | Socket | CoAP  | U |<-4->| UDP |   CoAP  |
+ +---------+     | Socket | CoAP  | U |     | UDP |   CoAP  |
  +---------+     +--------+ Proxy | D |     +-----+  Server |
  |  HTTP   |<-3->|  HTTP  |       | P |     | TCP |         |
- | Client  |<-5->|        |       |   |     |     |         |
+ | Client  |<-4->|        |       |   |     |     |         |
  +---------+     +--------+-------+---+     +-----+---------+
 
 ]]>
@@ -262,13 +270,13 @@ full title is longer than 39 characters -->
     represents this event, where the HTTP client performs a GET request to
     "http://proxy.example.com/coap+tcp://example.org/sensors/temperature". When
     the proxy receives the request, instead of immediately retrieving the
-    temperature resource again over TCP, it first verifies from the CoAP server
+    temperature resource again over TCP, it first verifies from the Resource Directory
     whether the cached resource retrieved over UDP is a valid equivalent
-    representation of the resource requested by the HTTP client over TCP (arrow
-    4). Upon confirmation, the proxy is able to supply the same cached
-    representation to the HTTP client as well (arrow 5).</t>
+    representation of the resource requested by the HTTP client over TCP. Upon confirmation, the proxy is able to supply the same cached
+    representation to the HTTP client as well (arrow 4).</t>
    </section>
 
+<!--
    <section title="Interaction with Energy-constrained Servers">
 
     <t><xref target="using-sms"/> illustrates discovery and communication
@@ -286,17 +294,7 @@ full title is longer than 39 characters -->
                 IP-based endpoint">
           <artwork type="drawing" align="center">
             <![CDATA[
-
-+-------------+-----+        +-----+-------------+
-|             |     |--1---->|     |             |
-|             | SMS |        | SMS |             |
-|             |     |<---2---|     |             |
-| CoAP Client +-----+        +-----+ CoAP Server |
-|             |     |--3---->|     |             |
-|             | UDP |        |(UDP)|             |
-|             |     |<---4---|     |             |
-+-------------+-----+        +-----+-------------+
-
+ REMOVED OWING TO PARSING ERROR ARISING FROM double "-" when section is commented out.
 ]]>
           </artwork>
         </figure>
@@ -313,6 +311,7 @@ full title is longer than 39 characters -->
     can occur between the endpoints as shown by arrows 3 and 4.</t>
 
    </section>
+-->   
  </section>
  
  <section title="Node Types based on Transport Availability">
@@ -610,6 +609,16 @@ RES: 2.05 Content
    
    &RFC2119;
 
+   <reference anchor="CoREWG96">
+      <front>
+       <title>IETF96 CoRE minutes</title>
+        <author>
+         <organization>https://www.ietf.org/proceedings/96/minutes/minutes-96-core</organization>
+        </author>
+        <date year="2016" month="July" day="19"/>
+      </front>
+   </reference>
+   
    <reference anchor="WWWArchv1">
       <front>
        <title>Architecture of the World Wide Web, Volume One</title>
