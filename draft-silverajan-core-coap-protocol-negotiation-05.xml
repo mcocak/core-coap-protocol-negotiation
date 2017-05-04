@@ -558,6 +558,9 @@ full title is longer than 39 characters -->
   </references>
 
  <section title="Change Log">
+<section title="From -04 to -05">
+ <t>Freshness update</t>
+</section> 
 <section title="From -03 to -04">
  <t>Removed previously introduced link attribute and relation types</t>
  <t>Initial foray with Resource Directory support</t>
