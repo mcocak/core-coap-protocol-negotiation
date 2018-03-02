@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!-- This template is for creating an Internet Draft using xml2rfc,
+    which is available here: http://xml2rfc.tools.ietf.org. -->
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!-- One method to get references from the online citation libraries.
+    There has to be one entity for each item to be referenced. 
+    An alternate method (rfc include) is described in the references. -->
+
+<!ENTITY RFC2119 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
+<!ENTITY RFC7228 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7228.xml">
+<!ENTITY RFC7252 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7252.xml">
+<!ENTITY RFC7641 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7641.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<!-- For a complete list and description of processing instructions (PIs), 
+    please see http://xml2rfc.tools.ietf.org/authoring/README.html. -->
+<!-- Below are generally applicable Processing Instructions (PIs) that most I-Ds might want to use.
+    (Here they are set differently than their defaults in xml2rfc v1.32) -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC) -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="4"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space 
+    (using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?>
+<!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- keep one blank line between list items -->
+<!-- end of list of popular I-D processing instructions -->
+
+<rfc category="info" docName="draft-silverajan-core-coap-protocol-negotiation-03" ipr="trust200902">
+ <!-- category values: std, bcp, info, exp, and historic
+    ipr values: trust200902, noModificationTrust200902, noDerivativesTrust200902,
+       or pre5378Trust200902
+    you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+    they will automatically be output with "(if approved)" -->
+
+<!-- ***** FRONT MATTER ***** -->
+
+<front>
+<!-- The abbreviated title is used in the page header - it is only necessary if the 
+full title is longer than 39 characters -->
+
+ <title abbrev="CoAP Protocol Negotiation">CoAP Protocol Negotiation</title>
+
+<!-- add 'role="editor"' below for the editors if appropriate -->
+
+ <author initials='B.' surname="Silverajan" fullname='Bilhanan Silverajan'>
+  <organization abbrev="TUT">Tampere University of Technology</organization>
+  <address>
+   <postal>
+    <street>Korkeakoulunkatu 10</street>
+    <code>FI-33720 Tampere</code>
+    <country>Finland</country>  
+   </postal>
+   <email>bilhanan.silverajan@tut.fi</email>
+  </address>
+ </author>
+
+ <author initials='M.' surname="Ocak" fullname='Mert Ocak'>
+  <organization abbrev="Ericsson">Ericsson</organization>
+  <address>
+  <postal>
+   <street>Hirsilantie 11</street>
+   <code>02420 Jorvase</code>
+   <country>Finland</country>
+  </postal>
+  <email>mert.ocak@ericsson.com</email>
+  </address>
+ </author>
+
+ <date year="2016" />
+
+ <area>Internet</area>
+
+ <workgroup>CoRE Working Group</workgroup>
+
+ <keyword>CoAP</keyword>
+ <keyword>Protocol Negotiation</keyword>
+
+ <!-- Keywords will be incorporated into HTML output files in a meta tag but
+ they have no effect on text or nroff output. If you submit your draft to the
+ RFC Editor, the keywords will be used for the search engine. -->
+
+ <abstract>    
+  <t>CoAP has been standardised as an application-level REST-based protocol.
+  When multiple transport protocols exist for exchanging CoAP resource
+  representations, this document introduces a way forward for CoAP endpoints as
+  well as intermediaries to agree upon alternate transport and protocol
+  configurations as well as URIs for CoAP messaging.
+  </t>
+ </abstract>
+</front>
+
+<middle>
+ 
+ <section title="Introduction">
+
+   <t>The Constrained Application Protocol (CoAP) <xref target="RFC7252"/>
+   allows clients, origin servers and proxies, to exchange and manipulate
+   resource representations using REST-based methods using UDP or DTLS. CoAP
+   messaging is however being extended to use other alternative underlying
+   transports. These include reliable transports such as TCP, WebSockets and
+   TLS. In addition, the use of SMS as a CoAP transport remains a
+   possibility for simple communication in cellular networks.</t>
+   
+   <t>When CoAP-based endpoints and proxies possess the ability to perform CoAP
+   messaging over multiple transports, significant benefits can be obtained if
+   communicating client endpoints can discover that multiple transport bindings
+   may exist on an origin server over which CoAP resources can be retrieved.
+   This allows a client to understand and possibly subsitute a different
+   transport protocol configuration for the same CoAP resources on the origin
+   server, based on the preferences of the communicating peers. Inevitably, if
+   two CoAP endpoints reside in distinctly separate networks with orthogonal
+   transports, a CoAP proxy node is needed between the two networks so that CoAP
+   Requests and Responses can be exchanged properly.</t>
+   
+   <t>A URI in CoAP, however, serves two purposes simultaneously. It firstly
+   functions as a locator, by specifying the network location of the endpoint
+   hosting the resource, and the underlying transport used by CoAP for accessing
+   the resource representation. It secondly identifies the name of the specific
+   resource found at that endpoint together with its namespace, or resource
+   path. A single CoAP URI cannot be used to express the identity of the
+   resource independently of alternate underlying transports or protocol
+   configuration. Multiple URIs can result for a single CoAP resource
+   representations if:</t>
+   
+   <t><list style="symbols">
+
+    <t>the authority components of the URI differ, owing to the same physical
+    host exposing several network endpoints. For example,
+    "coap://example.org/sensors/temperature" and
+    "coap://example.net/sensors/temperature"</t>
+
+    <t>the scheme components of the URI differ, owing to the origin server
+    exposing several underlying transport alternatives. For example,
+    "coap://example.org/sensors/temperature" and
+    "coap+tcp://example.org/sensors/temperature"</t>
+    
+    <t>the path components of the URI differ, should an origin server also allow
+    alternative transport endpoint such as the WebSocket protocol, to be
+    expressed using the path. For example,
+    "coap://example.org/sensors/temperature" and
+    "coap+ws://example.org/ws-endpoint/sensors/temperature"</t>
+
+   </list></t>
+   
+   <t>Without a priori knowledge, clients would be unable to ascertain if two or
+   more URIs provided by an origin server are associated to the same
+   representation or not. Consequently, a communication mechanism needs to be
+   conceived to allow an origin server to properly capture the relationship
+   between these alternate representations or locations and then subsequently
+   supply this information to clients. This also goes some way in limiting URI
+   aliasing [WWWArchv1].</t>
+
+   <t> In order to support CoAP clients, proxies and servers wishing to use CoAP
+   over multiple transports, this draft proposes the following:</t>
+
+   <t><list style="symbols">
+    <t>A means for CoAP clients to interact with an origin server's CoRE
+    resource directory interface to discover alternative transports and links
+    describing alternate locations of CoAP resources.</t>
+    
+    <t>An ability for servers to convey the names of supported CoAP transports
+    to requesting clients, in order of preference, as well as any optional
+    lifetime values associated with them.</t>
+
+    <t>A new link format attribute as well as a new link relation type that
+    together enable an origin server to serve a resource from other protocol
+    configurations or endpoints.</t>
+
+   </list></t>
+
+ </section>
+
+ <section title="Aim">
+   <t>The following simple scenarios aim to better portray how CoAP protocol
+   negotiation benefits communicating nodes</t>
+   
+   <section title="Overcoming Middlebox Issues">
+    <t>Discovering which transports are available is important for a client to
+    determine the optimal alternative to perform CoAP messaging according to its
+    needs, particularly when separated from a CoAP server via a NAT. It is
+    well-known that some firewalls as well as many NATs, particularly home
+    gateways, hinder the proper operation of UDP traffic. NAT bindings for
+    UDP-based traffic do not have as long timeouts as TCP-based traffic.</t>
+
+        <figure align="center"
+                anchor="NAT-TCP" title="CoAP Client initially accesses CoAP
+                Server over UDP and then switching to TCP">
+          <artwork type="drawing" align="center">
+            <![CDATA[
+
++-------------+-----+      +---+      +-----+-------------+
+|             |     |--1-->|   |--1-->|     |             |
+|             | UDP |      | N |      | UDP |             |
+|             |     |<--2--|   |<--2--|     |             |
+| CoAP Client +-----+      | A |      +-----+ CoAP Server |
+|             |     |--3-->|   |--3-->|     |             |
+|             | TCP |      | T |      | TCP |             |
+|             |     |<--4--|   |<--4--|     |             |
++-------------+-----+      +---+      +-----+-------------+
+
+]]>
+          </artwork>
+        </figure>
+
+    <t><xref target="NAT-TCP"/> depicts such a scenario, where a CoAP client
+    uses UDP initially for accessing a CoAP Server, and engages in discovering
+    alternative transports offered by the server. The client subsequently
+    decides to use TCP for CoAP messaging instead of UDP to set up an Observe
+    relationship for a resource at the CoAP Server, in order to avoid incoming
+    packets containing resource updates being discarded by the NAT.</t>
+
+   </section>
+
+   <section title="Better resource caching and serving in proxies">
+    <t><xref target="proxy-caching"/> outlines a more complex example of
+    intermediate nodes such as CoAP-based proxies to intelligently cache and
+    respond to CoAP or HTTP clients with the same resource representation
+    requested over alternative transports or server endpoints.</t>
+
+    <t>In this example, a CoAP over WebSockets client successfully obtains a
+    response from a CoAP forward proxy to retrieve a resource representation
+    from an origin server using UDP, by supplying the CoAP server's endpoint
+    address and resource in a Proxy-URI option. Arrow 1 represents a GET request
+    to "coap+ws://proxy.example.com" which subsequently retrieves the resource
+    from the CoAP server using the URI "coap://example.org/sensors/temperature",
+    shown as arrow 2.</t>
+
+        <figure align="center"
+                anchor="proxy-caching"
+                title="Proxying and returning a resource's alternate cached
+                representations to multiple clients">
+          <artwork type="drawing" align="center">
+            <![CDATA[
+
+ +---------+
+ | CoAP+WS |     +--------+-------+---+     +-----+---------+
+ | Client  |<-1->|  Web   |       |   |<-2->|     |         |
+ +---------+     | Socket | CoAP  | U |<-4->| UDP |   CoAP  |
+ +---------+     +--------+ Proxy | D |     +-----+  Server |
+ |  HTTP   |<-3->|  HTTP  |       | P |     | TCP |         |
+ | Client  |<-5->|        |       |   |     |     |         |
+ +---------+     +--------+-------+---+     +-----+---------+
+
+]]>
+          </artwork>
+        </figure>
+
+    <t>Subsequently, assume an HTTP client requests the same resource, but
+    instead specifies a CoAP over TCP alternative URI instead. Arrow 3
+    represents this event, where the HTTP client performs a GET request to
+    "http://proxy.example.com/coap+tcp://example.org/sensors/temperature". When
+    the proxy receives the request, instead of immediately retrieving the
+    temperature resource again over TCP, it first verifies from the CoAP server
+    whether the cached resource retrieved over UDP is a valid equivalent
+    representation of the resource requested by the HTTP client over TCP (arrow
+    4). Upon confirmation, the proxy is able to supply the same cached
+    representation to the HTTP client as well (arrow 5).</t>
+   </section>
+
+   <section title="Interaction with Energy-constrained Servers">
+
+    <t><xref target="using-sms"/> illustrates discovery and communication
+    between a CoAP client and an energy-constrained CoAP Server. Such a server
+    aims at conserving its energy unless a need arises otherwise. The figure
+    depicts the server maintaining its communication in a low-power state by
+    listening only for incoming SMS messages while disabling communication on
+    radio interfaces requiring greater energy. This is depicted as the server's
+    initial state in the figure, showing an active SMS endpoint and a disabled
+    or dormant UDP interface.</t>
+
+        <figure align="center"
+                anchor="using-sms"
+                title="CoAP client interacting over SMS to discover a server's
+                IP-based endpoint">
+          <artwork type="drawing" align="center">
+            <![CDATA[
+
++-------------+-----+        +-----+-------------+
+|             |     |--1---->|     |             |
+|             | SMS |        | SMS |             |
+|             |     |<---2---|     |             |
+| CoAP Client +-----+        +-----+ CoAP Server |
+|             |     |--3---->|     |             |
+|             | UDP |        |(UDP)|             |
+|             |     |<---4---|     |             |
++-------------+-----+        +-----+-------------+
+
+]]>
+          </artwork>
+        </figure>
+
+    <t>A CoAP client wishing to perform CoAP operations can query a CoAP server
+    for available transports via SMS, as shown in arrow 1. Upon reception of the
+    message, should the server have its radio and IP interface up, it can send
+    an SMS response containing the location of the CoAP IP endpoint and
+    supported transports. Alternatively, the incoming SMS can be also used by
+    the server as a triggering event to temporarily power up its radio interface
+    so that UDP or other transport-based CoAP communication can instead be
+    employed, and likewise provide this information in its response. This is
+    depicted as arrow 2. Subsequently, low latency IP-based CoAP communication
+    can occur between the endpoints as shown by arrows 3 and 4.</t>
+
+   </section>
+ </section>
+ 
+ <section title="Node Types based on Transport Availability">
+        
+   <t>In <xref target="RFC7228"/>, Tables 1, 3 and 4 introduced classification
+   schemes for devices, in terms of their resource constraints, energy
+   limitations and communication power. For this document, in addition to these
+   capabilities, it seems useful to additionally identify devices based on their
+   transport capabilities.</t>
+   
+       <figure>
+           <artwork><![CDATA[
+ 
+  +-------+----------------------------+
+  | Name  |  Transport Availability    |
+  +-------+----------------------------+
+  |  T0   |  Single transport          |
+  |       |                            |
+  |  T1   |  Multiple transports, with |
+  |       |  one or more active at any |
+  |       |  point in time             |
+  |       |                            |
+  |  T2   |  Multiple active and       |
+  |       |  persistent transports     |
+  |       |  at all times              |
+  +-------+----------------------------+
+
+ Table 1: Classes of Available Transports
+ 
+         ]]></artwork></figure>
+
+   <t>Type T0 nodes possess the capability of exactly 1 type of transport
+   channel for CoAP, at all times. These include both active and sleepy nodes,
+   which may choose to perform duty cycling for power saving.</t>
+
+   <t>Type T1 nodes possess multiple different transports, and can retrieve or
+   expose CoAP resources over any or all of these transports. However, not all
+   transports are constantly active and certain transport channels and
+   interfaces could be kept in a mostly-off state for energy-efficiency, such as
+   when using CoAP over SMS (refer to section 2.1)</t>
+     
+   <t>Type T2 nodes possess more than 1 transport, and multiple transports are
+   simultaneously active at all times in a persistent manner. CoAP proxy nodes
+   which allow CoAP endpoints from disparate transports to communicate with each
+   other, are a good example of this.</t>
+
+   </section>
+
+ <section title="New Link Attribute and Relation types">
+   <t>A CoAP server wishing to allow interactions with resources from multiple
+    locations or transports can do so by specifying the Transport Type "tt" link
+    attribute, which is an opaque string. Multiple transport types can be
+    included in the value of this parameter, each separated by a space. In such
+    cases, transport types appear in a prioritised list, with the most preferred
+    transport type by the CoAP server specified first and the lowest priority
+    transport type last.</t>
+    
+   <t>At the same time, each transport type supported
+    by the server is also described with an "altloc" link relation type. The
+    "altloc" relation type specifices a URI (containing the URI scheme,
+    authority and optionally path) providing an alternate endpoint location up
+    to but not including the resource path of a representation.</t>
+    
+   <t>Each URI specified by "altloc" link relation type can also have an active
+    lifetime value described with "al" link extension, which is an integer
+    showing the active lifetime in seconds. The "al" link extension specifies
+    how long the CoAP server will respond to the specified URI in "altloc"
+    relation type.</t>
+   
+   <t>Both "tt" and "altloc" are optional CoAP features. If
+    supported, they occur at the granularity level of an origin server, ie. they
+    cannot be applied selectively on some resources only. Therefore "altloc" is
+    always anchored at the root resource ("/"). The "al" link attribute, while
+    also being optional, exists at the granularity of each transport protocol
+    used. When it is absent, it is assumed that the transport protocol is
+    persistent.</t>
+   
+   <t>Additionally, the "tt" and "al" link attributes as well
+    as the "altloc" relation type can be ignored by unsupported CoAP
+    clients.</t>
+    
+ </section>
+ <section title="Observing Transport Types and Resource Representations">
+   <t>A CoAP client interested in being notified of changes in an origin
+   server's transport protocols for CoAP, can choose to do so with an Observe
+   relationship <xref target="RFC7641"/>. The client registers its interest on
+   the available active transports by setting the Observe option with a GET to
+   ".well-known/core" on a CoAP server, with a client-specified parameter value
+   for "tt" as depicted in <xref target="obs-core"/>. Updates on the active
+   transports will be sent to the CoAP client as CoAP notifications.</t>
+   
+         <figure align="center"
+                anchor="obs-core"
+                title="CoAP client observing .well-known/core for all transport types">
+          <artwork type="drawing" align="center">
+            <![CDATA[
+
+Client                         Server
+   |                              |
+   |  GET /.well-known/core?tt=*  |
+   |    Token: 0x7a               |   Registration
+   |  Observe: 0                  |
+   +----------------------------->|
+   |                              |
+   |    2.05 Content              |
+   |    Token: 0x7a               |   Notification of
+   |  Observe: 18                 |   transport type
+   |  Payload: "udp sms"          |
+   |<-----------------------------+
+   |                              |
+   |    2.05 Content              |
+   |    Token: 0x7a               |   Notification of new
+   |  Observe: 32                 |   transport
+   |  Payload: "udp sms tcp"      |
+   |<-----------------------------+
+   |                              |
+   |    2.05 Content              |
+   |    Token: 0x7a               |   Notification of
+   |  Observe: 56                 |   transport type
+   |  Payload: "udp sms"          |
+   |<-----------------------------+
+
+]]>
+          </artwork>
+        </figure>
+
+   <t>Observe relationships between a CoAP client and a CoAP server must conform
+   to established norms specified in <xref target="RFC7641"/>. Subsequent
+   notifications are considered to simply be additional responses to the
+   original client GET request. Therefore, should a client subsequently switch
+   to a different transport protocol (such as from UDP to TCP), it is the
+   responsibility of the client to deregister its interest beforehand or cancel
+   its interest as specified in section 3.6 of <xref target="RFC7641"/>. No
+   assumptions of session continuation should be made and the client should
+   instead re-register its interest using the new transport, either actively, or
+   upon the Max-Age of a stored representation being exceeded at the client.</t>
+
+   <t>A server can also prevent notifications to be perpetually sent to a client
+   on a previous transport, by using confirmable CoAP messages for responses.
+   This allows the server to remove an unresponsive client from its list of
+   interested observers.</t>
+ </section>
+ 
+ <section title="Examples">
+    
+   <t><xref target="example1"/> shows a CoAP server returning all transport
+   types and the alternate resource locations to a CoAP client performing a CoAP
+   Request to ./well-known/core</t>
+
+   <t>In this case, the server supplies two different locations to interact with
+   resources using CoAP over TCP i.e. the resources given in the CoAP response
+   are available from multiple hosts with different entry points and transport
+   layer security.</t>
+
+   <t>At the same time, the path to the WebSocket endpoint is provided in
+   addition to the FQDN of the server, for using CoAP over WebSockets,
+   exemplifying the ability to separate a CoAP resource path from a web-based
+   CoAP endpoint path in a URI.</t>
+
+        <figure align="center" anchor="example1" title="Example of Server
+        response">
+          <artwork type="drawing">
+            <![CDATA[
+
+REQ: GET /.well-known/core
+
+RES: 2.05 Content
+</sensors>;ct=40;title="Sensor Index", tt="tcp ws sms",
+</sensors/temp>;rt="temperature-c";if="sensor",
+</sensors/light>;rt="light-lux";if="sensor",
+<coap+tcp://server.example.com/>;rel="altloc",
+<coaps+tcp://server.example.net/>;rel="altloc",
+<coap+ws://server.example.com/ws-endpoint/>;rel="altloc",
+<coap+sms://001234567>;rel="altloc"
+]]>
+          </artwork>
+        </figure>
+
+   <t><xref target="example2"/> shows a CoAP client actively soliciting a CoAP
+   server for all supported transport types and protocol configurations.</t>
+
+        <figure align="center" anchor="example2" title="CoAP client discovering
+        transports supported by a CoAP server.">
+          <artwork type="drawing">
+            <![CDATA[
+REQ: GET /.well-known/core?tt=*
+
+RES: 2.05 Content
+</sensors>;tt="tcp sms ws"
+<coap+tcp://server.example.com/>;rel="altloc",
+<coap+tcp://server.example.net/>;rel="altloc",
+<coap+ws://server.example.com/ws-endpoint/>;rel="altloc",
+<coap+sms://001234567/>;rel="altloc"
+]]>
+          </artwork>
+        </figure>
+
+   <t><xref target="example3"/> shows a CoAP client explicitly soliciting
+   support for a specific transport type using a query filter parameter.</t>
+        
+        <figure align="center" anchor="example3" title="CoAP client looking for
+        a specific transport to use with a CoAP server.">
+
+          <artwork type="drawing">
+            <![CDATA[
+REQ: GET /.well-known/core?tt=sms
+
+RES: 2.05 Content
+</sensors>;tt="tcp sms ws"
+<coap+sms://001234567/>;rel="altloc"
+]]>
+          </artwork>
+        </figure>
+
+   <t><xref target="example4"/> shows a CoAP client making a CoAP over SMS
+   request to an energy-constrained CoAP server, explicitly soliciting support
+   for UDP-based communication by using a query filter parameter. The server
+   temporarily activates its UDP interface, responds with the location of the
+   UDP endpoint and also provides the expected lifetime of the transport, which
+   in this case is 120 seconds.</t>
+
+        <figure align="center" anchor="example4" title="CoAP client using CoAP
+        over SMS to discover UDP-based address and transport lifetime.">
+
+          <artwork type="drawing">
+            <![CDATA[
+REQ: GET /.well-known/core?tt=udp
+
+RES: 2.05 Content
+</sensors>;tt="udp sms"
+<coap://server.example.com/>;rel="altloc";al=120
+]]>
+          </artwork>
+        </figure>
+
+
+
+ </section>
+ <section anchor="IANA" title="IANA Considerations">
+
+   <t>This document requests the registration of a new link relation type
+   "altloc".
+    <list style="hanging">
+      <t hangText="Relation name:"><vspace/>altloc</t>
+      <t hangText="Description:"><vspace/>Identifies an alternate CoAP endpoint
+      location for a resource.</t>
+      <t hangText="Reference:"><vspace/>This document.</t> 
+    </list>
+   </t>
+
+ </section>
+
+ <section anchor="Security" title="Security Considerations">
+
+   <t>When multiple transports, locations and representations are used, some
+   obvious risks are present both at the origin server as well as by requesting
+   clients.</t>
+     
+   <t>An energy-constrained node exposing its resource representations using
+   CoAP over SMS, but subsequently enabling its IP interface on-demand, can be
+   subjected to denial-of-sleep as well as battery draining attacks by
+   attackers. The risk can be somewhat mitigated at the server by strict
+   requirements on the active lifetime of IP-based communication as well as
+   restricting which clients are allowed to request for IP-based communication
+   and referring other incoming requests to a caching proxy instead.</t>
+
+   <t>When a client is presented with alternate URIs for retrieving resources,
+   it presents an opportunity for attackers to mount a series of attacks, either
+   by hijacking communication and masquerading as an alternate location or by
+   using a man-in-the-middle attack on TLS-based communication to a server and
+   redirecting traffic to an alternate location. A malicious or compromised
+   server could also be used for reflective denial-of-service attacks on
+   innocent third parties. Moreover, clients may obtain web links to alternate
+   URIs containing weaker security properties than the existing session.</t>
+
+ </section>
+
+ 
+ <section anchor="Acknowledgements" title="Acknowledgements">
+   <t>Thanks to Klaus Hartke for comments and reviewing this draft, and Teemu
+   Savolainen for initial discussions about protocol negotations and lifetime
+   values.</t>
+ </section>
+</middle>
+
+ <!--  *****BACK MATTER ***** -->
+
+<back>
+ <references title="Normative References">
+   &RFC7228;
+   &RFC7252;
+   &RFC7641;
+ </references>
+ <references title="Informative References">
+   
+   &RFC2119;
+
+   <reference anchor="WWWArchv1">
+      <front>
+       <title>Architecture of the World Wide Web, Volume One</title>
+        <author>
+         <organization>http://www.w3.org/TR/webarch/#uri-aliases</organization>
+        </author>
+        <date year="2004" month="December" day="15"/>
+      </front>
+   </reference>
+  </references>
+
+ <section title="Change Log">
+  <section title="From -02 to -03">
+   <t>Added new author</t>
+   <t>Rewrite of "Introduction" section</t>
+   <t>Added new Aims Section</t>
+   <t>Added new Section on Node Types</t>
+   <t>Introduced "al" Active Lifetime link attribute</t>
+   <t>Added new Section on Observing transports and resources</t>
+   <t>Security and IANA considerations sections populated</t>
+ </section>
+  <section title="From -01 to -02">
+   <t>Freshness update.</t>
+  </section>
+  <section title="From -00 to -01">
+   <t>Reworked "Introduction" section, added "Rationale", and "Goals"
+   sections.</t>
+  </section>
+ </section>
+</back>
+</rfc>
