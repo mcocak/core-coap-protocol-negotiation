@@ -11,6 +11,12 @@
 <!ENTITY RFC7252 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7252.xml">
 <!ENTITY I-D.ietf-core-resource-directory SYSTEM
 'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-core-resource-directory'>
+<!ENTITY I-D.silverajan-core-coap-alternative-transports SYSTEM
+'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.silverajan-core-coap-alternative-transports'>
+
+
+
+
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <!-- used by XSLT processors -->
@@ -38,7 +44,7 @@
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
 
-<rfc category="info" docName="draft-silverajan-core-coap-protocol-negotiation-07" ipr="trust200902">
+<rfc category="info" docName="draft-silverajan-core-coap-protocol-negotiation-08" ipr="trust200902">
  <!-- category values: std, bcp, info, exp, and historic
     ipr values: trust200902, noModificationTrust200902, noDerivativesTrust200902,
        or pre5378Trust200902
@@ -79,7 +85,7 @@ full title is longer than 39 characters -->
   </address>
  </author>
 
- <date year="2017" />
+ <date year="2018" />
 
  <area>Internet</area>
 
@@ -97,7 +103,11 @@ full title is longer than 39 characters -->
   When multiple transport protocols exist for exchanging CoAP resource
   representations, this document introduces a way forward for CoAP endpoints as
   well as intermediaries to agree upon alternate transport and protocol
-  configurations as well as URIs for CoAP messaging. Several mechanisms are proposed: Extending the CoRE Resource Directory with new parameter types, introducing a new CoAP Option with which clients can interact directly with servers without needing the Resource Directory, and finally a new CoRE Link Attribute allowing exposing alternate locations on a per-resource basis.
+  configurations as well as URIs for CoAP messaging. Several mechanisms are
+  proposed: Extending the CoRE Resource Directory with new parameter types,
+  introducing a new CoAP Option with which clients can interact directly with
+  servers without needing the Resource Directory, and finally a new CoRE Link
+  Attribute allowing exposing alternate locations on a per-resource basis.
   </t>
  </abstract>
 </front>
@@ -109,10 +119,9 @@ full title is longer than 39 characters -->
    <t>The Constrained Application Protocol (CoAP) <xref target="RFC7252"/>
    allows clients, origin servers and proxies, to exchange and manipulate
    resource representations using REST-based methods over UDP or DTLS. CoAP
-   messaging is however being extended to use other alternative underlying
-   transports. These include reliable transports such as TCP, WebSockets and
-   TLS. In addition, the use of SMS as a CoAP transport remains a
-   possibility for simple communication in cellular networks.</t>
+   messaging however can use other alternative underlying
+   transports <xref
+   target="I-D.silverajan-core-coap-alternative-transports"/>.</t>
    
    <t>When CoAP-based endpoints and proxies possess the ability to perform CoAP
    messaging over multiple transports, significant benefits can be obtained if
@@ -147,12 +156,6 @@ full title is longer than 39 characters -->
     "coap://example.org/sensors/temperature" and
     "coap+tcp://example.org/sensors/temperature"</t>
     
-    <t>the path components of the URI differ, should an origin server also allow
-    alternative transport endpoint such as the WebSocket protocol, to be
-    expressed using the path. For example,
-    "coap://example.org/sensors/temperature" and
-    "coap+ws://example.org/ws-endpoint/sensors/temperature"</t>
-
    </list></t>
    
    <t>Without a priori knowledge, clients would be unable to ascertain if two or
@@ -177,9 +180,14 @@ full title is longer than 39 characters -->
     
     <t>New Resource Directory parameter types enabling the above-mentioned features.</t>
     
-    <t>A new CoAP Option called Alternative-Transport that can be used by CoAP clients to discover and retrieve the types of alternative transports available at the origin server, as well as the links describing the transport-specific endpoint address at which CoAP resources are exposed from.
+    <t>A new CoAP Option called Alternative-Transport that can be used by CoAP
+    clients to discover and retrieve the types of alternative transports
+    available at the origin server, as well as the links describing the
+    transport-specific endpoint address at which CoAP resources are exposed
+    from.
 </t>
-    <t>A new CoRE Link attribute for exposing transports and endpoint locations on an origin server on a per-resource basis.</t>
+    <t>A new CoRE Link attribute for exposing transports and endpoint locations
+    on an origin server on a per-resource basis.</t>
 
    </list></t>
 
@@ -203,35 +211,27 @@ full title is longer than 39 characters -->
           <artwork type="drawing" align="center">
             <![CDATA[
 
-                                           +-----------+
-                                           | Resource  |
-                                    +--4-->| Directory |
-                                    |      +-----------+
-                           +---+    |            ^
-                 +----4--->|   |<---+   +---1----+
-+-------------+--V--+      |   |      +-V-----------------+ 
-|             |     |--2-->|   |--2-->|     |             |
++-------------+-----+      +---+      +-------------------+ 
+|             |     |--1-->|   |--1-->|     |             |
 |             | UDP |      | N |      | UDP |             |
-|             |     |<--3--|   |<--3--|     |             |
+|             |     |<--2--|   |<--2--|     |             |
 | CoAP Client +-----+      | A |      +-----+ CoAP Server |
-|             |     |--5-->|   |--5-->|     |             |
+|             |     |--3-->|   |--3-->|     |             |
 |             | TCP |      | T |      | TCP |             |
-|             |     |<--6--|   |<--6--|     |             |
+|             |     |<--4--|   |<--4--|     |             |
 +-------------+-----+      +---+      +-----+-------------+
 
 ]]>
           </artwork>
         </figure>
 
-    <t><xref target="NAT-TCP"/> depicts such a scenario. Step 1 depicts the CoAP
-    Server registering its transports to a Resource Directory. A CoAP client
-    uses UDP initially for accessing a CoAP Server in Step 2 and receives a
-    response in Step 3. Subsequently a CoAP client, residing behind a NAT,
-    performs a lookup on the Resource Directory in Step 4 to discover
-    alternative transports offered by the server. Steps 5 and 6 illustrate the
-    client then deciding to use TCP for CoAP messaging instead of UDP to set up
-    an Observe relationship for a resource at the CoAP Server, in order to avoid
-    incoming packets containing resource updates being discarded by the NAT.</t>
+    <t><xref target="NAT-TCP"/> depicts such a scenario, where a CoAP client
+    residing behind a NAT uses UDP initially for accessing a CoAP Server, and
+    engages in discovering alternative transports offered by the server. The
+    client subsequently decides to use TCP for CoAP messaging instead of UDP to
+    set up an Observe relationship for a resource at the CoAP Server, in order
+    to avoid incoming packets containing resource updates being discarded by the
+    NAT.</t>
 
    </section>
 
@@ -277,48 +277,64 @@ full title is longer than 39 characters -->
     represents this event, where the HTTP client performs a GET request to
     "http://proxy.example.com/coap+tcp://example.org/sensors/temperature". When
     the proxy receives the request, instead of immediately retrieving the
-    temperature resource again over TCP, it first verifies either from the Resource Directory or directly from the server,
-    whether the cached resource retrieved over UDP is a valid equivalent
-    representation of the resource requested by the HTTP client over TCP. Upon confirmation, the proxy is able to supply the same cached
+    temperature resource again over TCP, it first verifies either from the
+    Resource Directory or directly from the server, whether the cached resource
+    retrieved over UDP is a valid equivalent representation of the resource
+    requested by the HTTP client over TCP. Upon confirmation, the proxy is able
+    to supply the same cached
     representation to the HTTP client as well (arrow 4).</t>
    </section>
 
-<!-- To be added once a suitable enabler is found to allow clients to ask server
    <section title="Interaction with Energy-constrained Servers">
 
     <t><xref target="using-sms"/> illustrates discovery and communication
     between a CoAP client and an energy-constrained CoAP Server. Such a server
     aims at conserving its energy unless a need arises otherwise. The figure
-    depicts the server maintaining its communication in a low-power state by
-    listening only for incoming SMS messages while disabling communication on
-    radio interfaces requiring greater energy. This is depicted as the server's
-    initial state in the figure, showing an active SMS endpoint and a disabled
-    or dormant UDP interface.</t>
+    first depicts the server registering itself to a Resource Directory over IP,
+    and also supplies its alternative CoAP transport endpoints (in this case,
+    SMS), in steps 1 and 2. The server can subsequently disable communication
+    radio interfaces requiring greater energy (such as for IP-based
+    comunication), powering it up sporadically for maintenance activities like
+    registration renewals. At other times, it maintains communication in
+    a low-power state by listening only for incoming SMS messages.</t>
 
         <figure align="center"
                 anchor="using-sms"
-                title="CoAP client interacting over SMS to discover a server's
-                IP-based endpoint">
+                title="CoAP client interacting with RD to discover a server's
+                SMS-based endpoint">
           <artwork type="drawing" align="center">
             <![CDATA[
- REMOVED OWING TO PARSING ERROR ARISING FROM double "-" when section is commented out.
+
+                +---------+
+                |  CoRE   |
+            +-->|   RD    |<--+
+            | +-+---------+-+ |
+           3| |             | |1
+            | |4           2| |
+            | v             v |
+ +---------------+       +---------------+
+ |         |     |       |     |         |
+ |  CoAP   | UDP |       | UDP |   CoAP  |
+ | Client  +-----+  5    +-----+  Server |
+ |         | SMS +------>| SMS |         |
+ |         |     +<------+     |         |
+ +---------------+   6   +---------------+
+
 ]]>
           </artwork>
         </figure>
 
-    <t>A CoAP client wishing to perform CoAP operations can query a CoAP server
-    for available transports via SMS, as shown in arrow 1. Upon reception of the
-    message, should the server have its radio and IP interface up, it can send
-    an SMS response containing the location of the CoAP IP endpoint and
-    supported transports. Alternatively, the incoming SMS can be also used by
-    the server as a triggering event to temporarily power up its radio interface
-    so that UDP or other transport-based CoAP communication can instead be
-    employed, and likewise provide this information in its response. This is
-    depicted as arrow 2. Subsequently, low latency IP-based CoAP communication
-    can occur between the endpoints as shown by arrows 3 and 4.</t>
+    <t>A CoAP client wishing to perform CoAP operations with an
+    energy-constrained CoAP server may query a resource directory for the
+    SMS-based endpoint of the server (steps 3 and 4). Subsequently, SMS-based
+    CoAP communication can occur between the endpoints as shown by arrows 5 and
+    6. Alternatively, the incoming SMS can be also used by the server as a
+    triggering event to temporarily power up its radio interface so that UDP or
+    other transport-based CoAP communication can instead be
+    employed for low latency communication with the client.</t>
 
    </section>
--->   
+   
  </section>
  
  <section title="Node Types based on Transport Availability">
@@ -378,9 +394,9 @@ full title is longer than 39 characters -->
  
  <section title="The 'at' RD parameter">
   <t>A CoAP server wishing to advertise its resources over multiple transports
-  does so by using a new "at" parameter to register a list of CoAP alternative
-  transport URIs during registration with a Resource Directory. Such a URI would
-  contain the schemes, addresses as well as any ports or paths at which the server is available.</t>
+  does so by using one or more "at" parameters to register CoAP alternative
+  transport URIs with a Resource Directory. Such a URI would
+  contain the scheme, address as well as any port or paths at which the server is available.</t>
  
         <figure>
            <artwork><![CDATA[
@@ -388,9 +404,9 @@ full title is longer than 39 characters -->
    +-----------+-------+---------------+-------------------------------+
    | Name      | Query | Validity      | Description                   |
    +-----------+-------+---------------+-------------------------------+
-   | CoAP      | at    |     URI       | Comma separated list of URIs  |
-   | Transport |       |               | (scheme, address, port, and   |
-   | URI List  |       |               | path) available at the server |
+   | CoAP      | at    |     URI       | URI (scheme, address, port    |
+   | Transport |       |               | and path) available           |
+   | URI List  |       |               | at the server                 |
    +-----------+-------+---------------+-------------------------------+  
 
  Table 2: The "at" RD parameter
@@ -399,41 +415,79 @@ full title is longer than 39 characters -->
 
  <t>The "at" parameter extends the Resource Directory's Registration and Update interfaces.</t>
  
-  <t>The following example shows a type T1 endpoint registering its resources and advertising its ability to use TCP as an alternative transport:</t>
+  <t>The following example shows a type T1 endpoint registering its resources
+  and advertising its ability to use TCP and WebSockets as alternative
+  transports:</t>
  
          <figure>
            <artwork><![CDATA[
 
-   Req: POST coap:/rd.example.com/rd
-    ?ep=node1&at=coap+tcp://server.example.com,coap+ws://server.example.com:5683/ws/
-   Content-Format: 40
-   Payload:
-   </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
-   </sensors/door>;ct=41;rt="door";if="sensor"
+ Req: POST coap://rd.example.com/rd?ep=node1
+    &at=coap+tcp://[2001:db8:f1::2]&at=coap+ws://server.example.com
+ Content-Format: 40
+ Payload:
+ </temperature>;ct=0;rt="temperature";if="core.s"
 
-   Res: 2.01 Created
-   Location: /rd/4521
+ Res: 2.01 Created
+ Location: /rd/1234
+         ]]></artwork></figure>
+
+ <t>An endpoint lookup would just reflect the registered attributes:</t>
+ 
+         <figure>
+           <artwork><![CDATA[
+ Req: GET /rd-lookup/ep
+
+ Res: 2.05 Content
+ </rd/1234>;ep="node1";con="coap://[2001:db8:f1::2]:5683";
+    at="coap+tcp://[2001:db8:f1::2]";at="coap+ws://server.example.com"
          ]]></artwork></figure>
 
  
- <t>The next example shows the same endpoint updating its registration with a new lifetime and the availability of a single alternative transport for CoAP (in this case WebSockets):</t>
+ <t>The next example shows the same endpoint updating its registration with a
+ new lifetime and the availability of a single alternative transport for CoAP
+ (in this case TCP):</t>
  
          <figure>
            <artwork><![CDATA[
 
-   Req: POST /rd/4521?lt=600&at=coap+ws://server.example.com:5683/ws/
-   Content-Format: 40
-   Payload:
-   </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
-   </sensors/door>;ct=41;rt="door";if="sensor"
+ Req: POST /rd/1234?lt=600
+    &at=coap+tcp://[2001:db8:f1::2]
+ Content-Format: 40
+ Payload:
+ </temperature>;ct=0;rt="temperature";if="core.s"
 
-   Res: 2.04 Changed
+ Res: 2.04 Changed
          ]]></artwork></figure>
+
+ <t>If a lookup is performed on the same endpoint only 1 alternative transport is indicated:</t>
+ 
+         <figure>
+           <artwork><![CDATA[
+ Req: GET /rd-lookup/ep
+
+ Res: 2.05 Content
+ </rd/1234>;ep="node1";con="coap://[2001:db8:f1::2]:5683";
+    at="coap+tcp://[2001:db8:f1::2]"
+         ]]></artwork></figure>
+
+<t>A UDP client would then see the following in a resource lookup:</t>
+         <figure>
+           <artwork><![CDATA[
+ Req: GET /rd-lookup/res?rt=temperature
+
+ Res: 2.05 Content
+ <coap://[2001:db8:f1::2]/temperature>;ct=0;rt="temperature";if="core.s";
+    anchor="coap://[2001:db8:f1::2]"
+         ]]></artwork></figure>
+ 
 
  </section>
  
  <section title="The 'tt' RD parameter">
-  <t>A CoAP client wishing to perform a look-up on the Resource Directory for CoAP servers supporting multiple transports does so by using a new "tt" parameter to query for CoAP alternative
+  <t>A CoAP client wishing to perform a look-up on the Resource Directory for
+  CoAP servers supporting multiple transports does so by using a new "tt"
+  parameter to query for CoAP alternative
   transport URIs.</t>
  
         <figure>
@@ -459,20 +513,36 @@ full title is longer than 39 characters -->
    Req: GET /rd-lookup/ep?tt=tcp
 
    Res: 2.05 Content
-   <coap+tcp://[FDFD::123]:61616>;ep="node5",
-   <coap+tcp://[FDFD::123]:61616>;ep="node7"
+   </rd/1234>;con="coap+tcp://[2001:db8:f1::2]";ep="node1";ct="40"
 
          ]]></artwork></figure>
 
- <t>The next example shows a client performing a lookup for all transports supported by a specific endpoint:</t>
+
+  <t>The following example shows a client performing a resource lookup for endpoints supporting TCP:</t>
         <figure>
            <artwork><![CDATA[
 
-   Req: GET /rd-lookup/ep?ep=node5&tt=*
+  Req: GET /rd-lookup/res?rt=temperature&tt=tcp
+
+  Res: 2.05 Content
+  <coap+tcp://[2001:db8:f1::2]/temperature>;ct=0;rt="temperature";
+   if="core.s";anchor="coap+tcp://[2001:db8:f1::2]"   
+
+         ]]></artwork></figure>
+
+  <t>The following example shows a client performing a lookup for endpoints
+  supporting SMS i.e. discovering SMS transports for sleepy nodes and using SMS
+  to communicate with the endpoint:</t>
+        <figure>
+           <artwork><![CDATA[
+
+   Req: GET /rd-lookup/ep?et=oic.d.switch&tt=sms
 
    Res: 2.05 Content
-   <coap+tcp://[FDFD::123]:61616>;ep="node5",
-   <coap+ws://[FDFD::123]:61616>;ep="node5"
+   </rd/2345>;con="coap+sms://0015105550101/";ep="node5";
+    et="oic.d.switch";ct="40",
+   </rd/4521>;con="coap+sms://0015105550202/";ep="node8";
+    et="oic.d.switch";ct="40"
 
          ]]></artwork></figure>
  
@@ -481,7 +551,9 @@ full title is longer than 39 characters -->
   
  
 <section title="CoAP Alternative-Transport Option">
- <t>The CoAP Alternative-Transport Option can be used by CoAP clients and CoAP servers in both Request and Response messages in constrained environments where a CoRE Resource Directory is not present. 
+ <t>The CoAP Alternative-Transport Option can be used by CoAP clients and CoAP
+ servers in both Request and Response messages in constrained environments where
+ a CoRE Resource Directory is not present. 
 </t>
  <t><xref target="Option-description"/> depicts the properties of the Alternative-Transport Option.</t>
  
@@ -505,15 +577,38 @@ full title is longer than 39 characters -->
           </artwork>
         </figure>
 
-<t>When included in a Request message, this option is used by the client in 2 possible ways. In the first case, a CoAP client can include the Option with Length 0 to retrieve all alternative transports from a CoAP server. In response to the client, the server includes base URI for each transport in its own Option. In the second case, a CoAP client can include the Option with a specific value in a CoAP Request, and the CoAP server returns the base URI(s) for the specified transport. If the specified transport by a CoAP client returns multiple results on a CoAP server, the server returns all base URIs of the transport in the response, each base URI in its own Option.</t>
+<t>When included in a Request message, this option is used by the client in 2
+possible ways. In the first case, a CoAP client can include the Option with
+Length 0 to retrieve all alternative transports from a CoAP server. In response
+to the client, the server includes base URI for each transport in its own
+Option. In the second case, a CoAP client can include the Option with a specific
+value in a CoAP Request, and the CoAP server returns the base URI(s) for the
+specified transport. If the specified transport by a CoAP client returns
+multiple results on a CoAP server, the server returns all base URIs of the
+transport in the response, each base URI in its own Option.</t>
 
-<t>A CoAP client can also use this Option to retrieve several transports at once by including multiple Options in the request to a CoAP server. If any of the specified transports is supported by the server, the server returns all base URIs in its own option. There can be more than 1 result for any of the transports so that each transport base URI is still included in the response in its own option.</t>
+<t>A CoAP client can also use this Option to retrieve several transports at once
+by including multiple Options in the request to a CoAP server. If any of the
+specified transports is supported by the server, the server returns all base
+URIs in its own option. There can be more than 1 result for any of the
+transports so that each transport base URI is still included in the response in
+its own option.</t>
 
-<t><xref target="Option-null"/> describes a simple interaction between a client and a server, in which the client uses an Alternative-Transports Option with a null value to discover and retrieve all the available transports from the server, as part of a GET operation to retrieve a resource representation. The server responds with a CoAP Response message which contains the resource representation as a payload. In addition, the server also supplies multiple Alternative-Transport Options in the message, with each Option containing the base URI for an available transport. In this case the base URIs returned for TCP-based and WebSocket transports indicate their availability over a non-standard port.</t>
+<t><xref target="Option-null"/> describes a simple interaction between a client
+and a server, in which the client uses an Alternative-Transports Option with a
+null value to discover and retrieve all the available transports from the
+server, as part of a GET operation to retrieve a resource representation. The
+server responds with a CoAP Response message which contains the resource
+representation as a payload. In addition, the server also supplies multiple
+Alternative-Transport Options in the message, with each Option containing the
+base URI for an available transport. In this case the base URIs returned for
+TCP-based and WebSocket transports indicate their availability over a
+non-standard port.</t>
 
          <figure align="center"
                 anchor="Option-null"
-                title="Requesting all available alternative transports on the server, and their locations">
+                title="Requesting all available alternative transports on the
+                server, and their locations">
           <artwork type="drawing" align="center">
             <![CDATA[
 
@@ -545,11 +640,15 @@ Client                                  Server
           </artwork>
         </figure>
 
-<t>Alternatively, a client can also request for the availability of a specific transport on the server, as shown in <xref target="Option-TCP"/>. Here, the CoAP Request contains an Alternative-Transport Option with the value set to request the Base URIs for TCP-based endpoints.</t>
+<t>Alternatively, a client can also request for the availability of a specific
+transport on the server, as shown in <xref target="Option-TCP"/>. Here, the CoAP
+Request contains an Alternative-Transport Option with the value set to request
+the Base URIs for TCP-based endpoints.</t>
 
          <figure align="center"
                 anchor="Option-TCP"
-                title="Requesting TCP-based alternative transports on the server, and their locations">
+                title="Requesting TCP-based alternative transports on the
+                server, and their locations">
           <artwork type="drawing" align="center">
             <![CDATA[
 
@@ -576,11 +675,15 @@ Client                                  Server
           </artwork>
         </figure>
 
-<t>A client may also request a subset of available transports on the server, by providing multiple Options, each having a single transport identifier. The server likewise responds to the client request by supplying the requested transport information. This is shown in <xref target="Option-WS-SMS"/>.</t>
+<t>A client may also request a subset of available transports on the server, by
+providing multiple Options, each having a single transport identifier. The
+server likewise responds to the client request by supplying the requested
+transport information. This is shown in <xref target="Option-WS-SMS"/>.</t>
 
          <figure align="center"
                 anchor="Option-WS-SMS"
-                title="Requesting WebSocket- and SMS-based alternative transports on the server, and their locations">
+                title="Requesting WebSocket- and SMS-based alternative
+                transports on the server, and their locations">
           <artwork type="drawing" align="center">
             <![CDATA[
 
@@ -611,7 +714,15 @@ Client                                  Server
 </section>
 <section title="The 'ol' CoRE Link Attribute">
 
-   <t>In the majority of cases, it is expected that an origin server would expose all its resources uniformly on its available transports or endpoint addresses. Exceptions can exist however, where alternate locations are made available on a per-resource basis. For such cases, a new 'ol' ("other locations") attribute is provided. This attribute is a string used to provide a list of base URIs from which a specific resource can be reached. Allowing per-resource endpoint or transport availabilty enables specific functions such as firmware updates or hardware-specific operations. It also facilities mapping to and from OCF-based resource-specific endpoint descriptions.</t>
+   <t>In the majority of cases, it is expected that an origin server would
+   expose all its resources uniformly on its available transports or endpoint
+   addresses. Exceptions can exist however, where alternate locations are made
+   available on a per-resource basis. For such cases, a new 'ol' ("other
+   locations") attribute is provided. One or more 'ol' attributes are used to
+   provide base URIs from which a specific resource can be reached. Allowing
+   per-resource endpoint or transport availability enables specific functions
+   such as firmware updates or hardware-specific operations. It also facilities
+   mapping to and from OCF-based resource-specific endpoint descriptions.</t>
      
 <section title="Using /.well-known/core">
 
@@ -622,8 +733,8 @@ Client                                  Server
    RES: 2.05 Content
    </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
    </sensors/door>;ct=41;rt="door";if="sensor",
-   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616,
-     coap://server2.example.com"
+   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616";
+     ol="coap://server2.example.com"
 
          ]]></artwork></figure>
 
@@ -634,13 +745,13 @@ Client                                  Server
         <figure>
            <artwork><![CDATA[
    Req: POST coap:/rd.example.com/rd
-    ?ep=node1&at=coap+tcp://server.example.com,coap+ws://server.example.com:5683/ws/
+    ?ep=node1&at=coap+tcp://server.example.com&at=coap+ws://server.example.com:5683/ws/
    Content-Format: 40
    Payload:
    </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
    </sensors/door>;ct=41;rt="door";if="sensor",
-   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616,
-     coap://server2.example.com"
+   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616";
+     ol="coap://server2.example.com"
 
    Res: 2.01 Created
    Location: /rd/4521
@@ -704,10 +815,11 @@ Client                                  Server
 
  
  <section anchor="Acknowledgements" title="Acknowledgements">
-   <t>Thanks to Klaus Hartke for comments and reviewing this draft, and Teemu
-   Savolainen for initial discussions about protocol negotations and lifetime
-   values. Zach Shelby provided significant suggestions on how the Resource
-   Directory can be employed and extended in place of link attributes and
+   <t>Thanks to Jaime Jimenez, Christian Amsuess and Klaus Hartke for comments
+   and reviewing this draft. Teemu Savolainen was involved in initial
+   discussions about protocol negotations and lifetime values. Zach Shelby
+   provided significant suggestions on how the Resource Directory can be
+   employed and extended in place of link attributes and
    relation types.</t>
  </section>
 </middle>
@@ -720,6 +832,7 @@ Client                                  Server
    &I-D.ietf-core-resource-directory;
  </references>
  <references title="Informative References">
+   &I-D.silverajan-core-coap-alternative-transports;
    
    &RFC2119;
    &RFC7228;
@@ -747,6 +860,11 @@ Client                                  Server
 
  <section title="Change Log">
  
+<section title="From -07 to -08">
+ <t>Added example of energy constrained CoAP server</t>
+ <t>Updated examples of using "at" and "tt"</t>
+ <t>"at" and "ol" are no longer comma-separated URI lists.</t>
+</section>
 <section title="From -06 to -07">
  <t>Added support for 'ol' Link attribute</t>
 </section>
