@@ -11,6 +11,12 @@
 <!ENTITY RFC7252 SYSTEM "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7252.xml">
 <!ENTITY I-D.ietf-core-resource-directory SYSTEM
 'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-core-resource-directory'>
+<!ENTITY I-D.silverajan-core-coap-alternative-transports SYSTEM
+'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.silverajan-core-coap-alternative-transports'>
+
+
+
+
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <!-- used by XSLT processors -->
@@ -97,7 +103,11 @@ full title is longer than 39 characters -->
   When multiple transport protocols exist for exchanging CoAP resource
   representations, this document introduces a way forward for CoAP endpoints as
   well as intermediaries to agree upon alternate transport and protocol
-  configurations as well as URIs for CoAP messaging. Several mechanisms are proposed: Extending the CoRE Resource Directory with new parameter types, introducing a new CoAP Option with which clients can interact directly with servers without needing the Resource Directory, and finally a new CoRE Link Attribute allowing exposing alternate locations on a per-resource basis.
+  configurations as well as URIs for CoAP messaging. Several mechanisms are
+  proposed: Extending the CoRE Resource Directory with new parameter types,
+  introducing a new CoAP Option with which clients can interact directly with
+  servers without needing the Resource Directory, and finally a new CoRE Link
+  Attribute allowing exposing alternate locations on a per-resource basis.
   </t>
  </abstract>
 </front>
@@ -109,10 +119,9 @@ full title is longer than 39 characters -->
    <t>The Constrained Application Protocol (CoAP) <xref target="RFC7252"/>
    allows clients, origin servers and proxies, to exchange and manipulate
    resource representations using REST-based methods over UDP or DTLS. CoAP
-   messaging is however being extended to use other alternative underlying
-   transports. These include reliable transports such as TCP, WebSockets and
-   TLS. In addition, the use of SMS as a CoAP transport remains a
-   possibility for simple communication in cellular networks.</t>
+   messaging however can use other alternative underlying
+   transports <xref
+   target="I-D.silverajan-core-coap-alternative-transports"/>.</t>
    
    <t>When CoAP-based endpoints and proxies possess the ability to perform CoAP
    messaging over multiple transports, significant benefits can be obtained if
@@ -736,6 +745,7 @@ Client                                  Server
    &I-D.ietf-core-resource-directory;
  </references>
  <references title="Informative References">
+   &I-D.silverajan-core-coap-alternative-transports;
    
    &RFC2119;
    &RFC7228;
