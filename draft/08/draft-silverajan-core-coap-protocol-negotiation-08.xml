@@ -577,15 +577,38 @@ full title is longer than 39 characters -->
           </artwork>
         </figure>
 
-<t>When included in a Request message, this option is used by the client in 2 possible ways. In the first case, a CoAP client can include the Option with Length 0 to retrieve all alternative transports from a CoAP server. In response to the client, the server includes base URI for each transport in its own Option. In the second case, a CoAP client can include the Option with a specific value in a CoAP Request, and the CoAP server returns the base URI(s) for the specified transport. If the specified transport by a CoAP client returns multiple results on a CoAP server, the server returns all base URIs of the transport in the response, each base URI in its own Option.</t>
+<t>When included in a Request message, this option is used by the client in 2
+possible ways. In the first case, a CoAP client can include the Option with
+Length 0 to retrieve all alternative transports from a CoAP server. In response
+to the client, the server includes base URI for each transport in its own
+Option. In the second case, a CoAP client can include the Option with a specific
+value in a CoAP Request, and the CoAP server returns the base URI(s) for the
+specified transport. If the specified transport by a CoAP client returns
+multiple results on a CoAP server, the server returns all base URIs of the
+transport in the response, each base URI in its own Option.</t>
 
-<t>A CoAP client can also use this Option to retrieve several transports at once by including multiple Options in the request to a CoAP server. If any of the specified transports is supported by the server, the server returns all base URIs in its own option. There can be more than 1 result for any of the transports so that each transport base URI is still included in the response in its own option.</t>
+<t>A CoAP client can also use this Option to retrieve several transports at once
+by including multiple Options in the request to a CoAP server. If any of the
+specified transports is supported by the server, the server returns all base
+URIs in its own option. There can be more than 1 result for any of the
+transports so that each transport base URI is still included in the response in
+its own option.</t>
 
-<t><xref target="Option-null"/> describes a simple interaction between a client and a server, in which the client uses an Alternative-Transports Option with a null value to discover and retrieve all the available transports from the server, as part of a GET operation to retrieve a resource representation. The server responds with a CoAP Response message which contains the resource representation as a payload. In addition, the server also supplies multiple Alternative-Transport Options in the message, with each Option containing the base URI for an available transport. In this case the base URIs returned for TCP-based and WebSocket transports indicate their availability over a non-standard port.</t>
+<t><xref target="Option-null"/> describes a simple interaction between a client
+and a server, in which the client uses an Alternative-Transports Option with a
+null value to discover and retrieve all the available transports from the
+server, as part of a GET operation to retrieve a resource representation. The
+server responds with a CoAP Response message which contains the resource
+representation as a payload. In addition, the server also supplies multiple
+Alternative-Transport Options in the message, with each Option containing the
+base URI for an available transport. In this case the base URIs returned for
+TCP-based and WebSocket transports indicate their availability over a
+non-standard port.</t>
 
          <figure align="center"
                 anchor="Option-null"
-                title="Requesting all available alternative transports on the server, and their locations">
+                title="Requesting all available alternative transports on the
+                server, and their locations">
           <artwork type="drawing" align="center">
             <![CDATA[
 
@@ -617,11 +640,15 @@ Client                                  Server
           </artwork>
         </figure>
 
-<t>Alternatively, a client can also request for the availability of a specific transport on the server, as shown in <xref target="Option-TCP"/>. Here, the CoAP Request contains an Alternative-Transport Option with the value set to request the Base URIs for TCP-based endpoints.</t>
+<t>Alternatively, a client can also request for the availability of a specific
+transport on the server, as shown in <xref target="Option-TCP"/>. Here, the CoAP
+Request contains an Alternative-Transport Option with the value set to request
+the Base URIs for TCP-based endpoints.</t>
 
          <figure align="center"
                 anchor="Option-TCP"
-                title="Requesting TCP-based alternative transports on the server, and their locations">
+                title="Requesting TCP-based alternative transports on the
+                server, and their locations">
           <artwork type="drawing" align="center">
             <![CDATA[
 
@@ -648,11 +675,15 @@ Client                                  Server
           </artwork>
         </figure>
 
-<t>A client may also request a subset of available transports on the server, by providing multiple Options, each having a single transport identifier. The server likewise responds to the client request by supplying the requested transport information. This is shown in <xref target="Option-WS-SMS"/>.</t>
+<t>A client may also request a subset of available transports on the server, by
+providing multiple Options, each having a single transport identifier. The
+server likewise responds to the client request by supplying the requested
+transport information. This is shown in <xref target="Option-WS-SMS"/>.</t>
 
          <figure align="center"
                 anchor="Option-WS-SMS"
-                title="Requesting WebSocket- and SMS-based alternative transports on the server, and their locations">
+                title="Requesting WebSocket- and SMS-based alternative
+                transports on the server, and their locations">
           <artwork type="drawing" align="center">
             <![CDATA[
 
@@ -683,7 +714,15 @@ Client                                  Server
 </section>
 <section title="The 'ol' CoRE Link Attribute">
 
-   <t>In the majority of cases, it is expected that an origin server would expose all its resources uniformly on its available transports or endpoint addresses. Exceptions can exist however, where alternate locations are made available on a per-resource basis. For such cases, a new 'ol' ("other locations") attribute is provided. One or more 'ol' attributes are used to provide base URIs from which a specific resource can be reached. Allowing per-resource endpoint or transport availability enables specific functions such as firmware updates or hardware-specific operations. It also facilities mapping to and from OCF-based resource-specific endpoint descriptions.</t>
+   <t>In the majority of cases, it is expected that an origin server would
+   expose all its resources uniformly on its available transports or endpoint
+   addresses. Exceptions can exist however, where alternate locations are made
+   available on a per-resource basis. For such cases, a new 'ol' ("other
+   locations") attribute is provided. One or more 'ol' attributes are used to
+   provide base URIs from which a specific resource can be reached. Allowing
+   per-resource endpoint or transport availability enables specific functions
+   such as firmware updates or hardware-specific operations. It also facilities
+   mapping to and from OCF-based resource-specific endpoint descriptions.</t>
      
 <section title="Using /.well-known/core">
 
