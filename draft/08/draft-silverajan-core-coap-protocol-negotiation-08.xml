@@ -284,42 +284,56 @@ full title is longer than 39 characters -->
     representation to the HTTP client as well (arrow 4).</t>
    </section>
 
-<!-- To be added once a suitable enabler is found to allow clients to ask server
    <section title="Interaction with Energy-constrained Servers">
 
     <t><xref target="using-sms"/> illustrates discovery and communication
     between a CoAP client and an energy-constrained CoAP Server. Such a server
     aims at conserving its energy unless a need arises otherwise. The figure
-    depicts the server maintaining its communication in a low-power state by
-    listening only for incoming SMS messages while disabling communication on
-    radio interfaces requiring greater energy. This is depicted as the server's
-    initial state in the figure, showing an active SMS endpoint and a disabled
-    or dormant UDP interface.</t>
+    first depicts the server registering itself to a Resource Directory over IP,
+    and also supplies its alternative CoAP transport endpoints (in this case,
+    SMS), in steps 1 and 2. The server can subsequently disable communication
+    radio interfaces requiring greater energy (such as for IP-based
+    comunication), powering it up sporadically for maintenance activities like
+    registration renewals. At other times, it maintains communication in
+    a low-power state by listening only for incoming SMS messages.</t>
 
         <figure align="center"
                 anchor="using-sms"
-                title="CoAP client interacting over SMS to discover a server's
-                IP-based endpoint">
+                title="CoAP client interacting with RD to discover a server's
+                SMS-based endpoint">
           <artwork type="drawing" align="center">
             <![CDATA[
- REMOVED OWING TO PARSING ERROR ARISING FROM double "-" when section is commented out.
+
+                +---------+
+                |  CoRE   |
+            +-->|   RD    |<--+
+            | +-+---------+-+ |
+           3| |             | |1
+            | |4           2| |
+            | v             v |
+ +---------------+       +---------------+
+ |         |     |       |     |         |
+ |  CoAP   | UDP |       | UDP |   CoAP  |
+ | Client  +-----+  5    +-----+  Server |
+ |         | SMS +------>| SMS |         |
+ |         |     +<------+     |         |
+ +---------------+   6   +---------------+
+
 ]]>
           </artwork>
         </figure>
 
-    <t>A CoAP client wishing to perform CoAP operations can query a CoAP server
-    for available transports via SMS, as shown in arrow 1. Upon reception of the
-    message, should the server have its radio and IP interface up, it can send
-    an SMS response containing the location of the CoAP IP endpoint and
-    supported transports. Alternatively, the incoming SMS can be also used by
-    the server as a triggering event to temporarily power up its radio interface
-    so that UDP or other transport-based CoAP communication can instead be
-    employed, and likewise provide this information in its response. This is
-    depicted as arrow 2. Subsequently, low latency IP-based CoAP communication
-    can occur between the endpoints as shown by arrows 3 and 4.</t>
+    <t>A CoAP client wishing to perform CoAP operations with an
+    energy-constrained CoAP server may query a resource directory for the
+    SMS-based endpoint of the server (steps 3 and 4). Subsequently, SMS-based
+    CoAP communication can occur between the endpoints as shown by arrows 5 and
+    6. Alternatively, the incoming SMS can be also used by the server as a
+    triggering event to temporarily power up its radio interface so that UDP or
+    other transport-based CoAP communication can instead be
+    employed for low latency communication with the client.</t>
 
    </section>
--->   
+   
  </section>
  
  <section title="Node Types based on Transport Availability">
