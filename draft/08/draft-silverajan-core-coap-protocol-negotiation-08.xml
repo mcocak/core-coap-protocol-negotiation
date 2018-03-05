@@ -492,32 +492,20 @@ full title is longer than 39 characters -->
    Req: GET /rd-lookup/ep?tt=tcp
 
    Res: 2.05 Content
-   <coap+tcp://[FDFD::123]:61616>;ep="node5",
-   <coap+tcp://[FDFD::124]:61616>;ep="node7"
+   </rd/1234>;con="coap+tcp://[2001:db8:f1::2]";ep="node1";ct="40"
 
          ]]></artwork></figure>
 
- <t>The next example shows a client performing a lookup for all transports supported by a specific endpoint:</t>
+
+  <t>The following example shows a client performing a resource lookup for endpoints supporting TCP:</t>
         <figure>
            <artwork><![CDATA[
 
-   Req: GET /rd-lookup/ep?ep=node5&tt=*
+  Req: GET /rd-lookup/res?rt=temperature&tt=tcp
 
-   Res: 2.05 Content
-   <coap+tcp://[FDFD::123]:61616>;ep="node5",
-   <coap+ws://[FDFD::123]:71717>;ep="node5"
-
-         ]]></artwork></figure>
-
-  <t>The following example shows a client performing a lookup for endpoints supporting TCP with the given resource type:</t>
-        <figure>
-           <artwork><![CDATA[
-
-   Req: GET /rd-lookup/ep?rt=light&tt=tcp
-
-   Res: 2.05 Content
-   <coap+tcp://[FDFD::123]:61616>;ep="node5";rt="light",
-   <coap+tcp://[FDFD::124]:61616>;ep="node7";rt="light"
+  Res: 2.05 Content
+  <coap+tcp://[2001:db8:f1::2]/temperature>;ct=0;rt="temperature";
+   if="core.s";anchor="coap+tcp://[2001:db8:f1::2]"   
 
          ]]></artwork></figure>
 
@@ -528,8 +516,10 @@ full title is longer than 39 characters -->
    Req: GET /rd-lookup/ep?et=oic.d.switch&tt=sms
 
    Res: 2.05 Content
-   <coap+sms://0015105550101/>;ep="node5";et="oic.d.switch",
-   <coap+sms://0015105550202/>;ep="node8";et="oic.d.switch"
+   </rd/2345>;con="coap+sms://0015105550101/";ep="node5";
+    et="oic.d.switch";ct="40",
+   </rd/4521>;con="coap+sms://0015105550202/";ep="node8";
+    et="oic.d.switch";ct="40"
 
          ]]></artwork></figure>
  
@@ -668,7 +658,7 @@ Client                                  Server
 </section>
 <section title="The 'ol' CoRE Link Attribute">
 
-   <t>In the majority of cases, it is expected that an origin server would expose all its resources uniformly on its available transports or endpoint addresses. Exceptions can exist however, where alternate locations are made available on a per-resource basis. For such cases, a new 'ol' ("other locations") attribute is provided. This attribute is a string used to provide a list of base URIs from which a specific resource can be reached. Allowing per-resource endpoint or transport availability enables specific functions such as firmware updates or hardware-specific operations. It also facilities mapping to and from OCF-based resource-specific endpoint descriptions.</t>
+   <t>In the majority of cases, it is expected that an origin server would expose all its resources uniformly on its available transports or endpoint addresses. Exceptions can exist however, where alternate locations are made available on a per-resource basis. For such cases, a new 'ol' ("other locations") attribute is provided. One or more 'ol' attributes are used to provide base URIs from which a specific resource can be reached. Allowing per-resource endpoint or transport availability enables specific functions such as firmware updates or hardware-specific operations. It also facilities mapping to and from OCF-based resource-specific endpoint descriptions.</t>
      
 <section title="Using /.well-known/core">
 
@@ -679,8 +669,8 @@ Client                                  Server
    RES: 2.05 Content
    </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
    </sensors/door>;ct=41;rt="door";if="sensor",
-   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616,
-     coap://server2.example.com"
+   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616";
+     ol="coap://server2.example.com"
 
          ]]></artwork></figure>
 
@@ -691,13 +681,13 @@ Client                                  Server
         <figure>
            <artwork><![CDATA[
    Req: POST coap:/rd.example.com/rd
-    ?ep=node1&at=coap+tcp://server.example.com,coap+ws://server.example.com:5683/ws/
+    ?ep=node1&at=coap+tcp://server.example.com&at=coap+ws://server.example.com:5683/ws/
    Content-Format: 40
    Payload:
    </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
    </sensors/door>;ct=41;rt="door";if="sensor",
-   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616,
-     coap://server2.example.com"
+   </sensors/light>;if="sensor"; ol="http://[FDFD::123]:61616";
+     ol="coap://server2.example.com"
 
    Res: 2.01 Created
    Location: /rd/4521
@@ -761,10 +751,11 @@ Client                                  Server
 
  
  <section anchor="Acknowledgements" title="Acknowledgements">
-   <t>Thanks to Klaus Hartke for comments and reviewing this draft, and Teemu
-   Savolainen for initial discussions about protocol negotations and lifetime
-   values. Zach Shelby provided significant suggestions on how the Resource
-   Directory can be employed and extended in place of link attributes and
+   <t>Thanks to Jaime Jimenez, Christian Amsuss and Klaus Hartke for comments
+   and reviewing this draft. Teemu Savolainen was involved in initial
+   discussions about protocol negotations and lifetime values. Zach Shelby
+   provided significant suggestions on how the Resource Directory can be
+   employed and extended in place of link attributes and
    relation types.</t>
  </section>
 </middle>
