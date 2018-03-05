@@ -379,9 +379,9 @@ full title is longer than 39 characters -->
  
  <section title="The 'at' RD parameter">
   <t>A CoAP server wishing to advertise its resources over multiple transports
-  does so by using a new "at" parameter to register a list of CoAP alternative
-  transport URIs during registration with a Resource Directory. Such a URI would
-  contain the schemes, addresses as well as any ports or paths at which the server is available.</t>
+  does so by using one or more "at" parameters to register CoAP alternative
+  transport URIs with a Resource Directory. Such a URI would
+  contain the scheme, address as well as any port or paths at which the server is available.</t>
  
         <figure>
            <artwork><![CDATA[
@@ -389,9 +389,9 @@ full title is longer than 39 characters -->
    +-----------+-------+---------------+-------------------------------+
    | Name      | Query | Validity      | Description                   |
    +-----------+-------+---------------+-------------------------------+
-   | CoAP      | at    |     URI       | Comma separated list of URIs  |
-   | Transport |       |               | (scheme, address, port, and   |
-   | URI List  |       |               | path) available at the server |
+   | CoAP      | at    |     URI       | URI (scheme, address, port    |
+   | Transport |       |               | and path) available           |
+   | URI List  |       |               | at the server                 |
    +-----------+-------+---------------+-------------------------------+  
 
  Table 2: The "at" RD parameter
@@ -400,36 +400,68 @@ full title is longer than 39 characters -->
 
  <t>The "at" parameter extends the Resource Directory's Registration and Update interfaces.</t>
  
-  <t>The following example shows a type T1 endpoint registering its resources and advertising its ability to use TCP as an alternative transport:</t>
+  <t>The following example shows a type T1 endpoint registering its resources and advertising its ability to use TCP and WebSockets as alternative transports:</t>
  
          <figure>
            <artwork><![CDATA[
 
-   Req: POST coap:/rd.example.com/rd
-    ?ep=node1&at=coap+tcp://server.example.com,coap+ws://server.example.com:5683/ws/
-   Content-Format: 40
-   Payload:
-   </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
-   </sensors/door>;ct=41;rt="door";if="sensor"
+ Req: POST coap://rd.example.com/rd?ep=node1
+    &at=coap+tcp://[2001:db8:f1::2]&at=coap+ws://server.example.com
+ Content-Format: 40
+ Payload:
+ </temperature>;ct=0;rt="temperature";if="core.s"
 
-   Res: 2.01 Created
-   Location: /rd/4521
+ Res: 2.01 Created
+ Location: /rd/1234
+         ]]></artwork></figure>
+
+ <t>An endpoint lookup would just reflect the registered attributes:</t>
+ 
+         <figure>
+           <artwork><![CDATA[
+ Req: GET /rd-lookup/ep
+
+ Res: 2.05 Content
+ </rd/1234>;ep="node1";con="coap://[2001:db8:f1::2]:5683";
+    at="coap+tcp://[2001:db8:f1::2]";at="coap+ws://server.example.com"
          ]]></artwork></figure>
 
  
- <t>The next example shows the same endpoint updating its registration with a new lifetime and the availability of a single alternative transport for CoAP (in this case WebSockets):</t>
+ <t>The next example shows the same endpoint updating its registration with a new lifetime and the availability of a single alternative transport for CoAP (in this case TCP):</t>
  
          <figure>
            <artwork><![CDATA[
 
-   Req: POST /rd/4521?lt=600&at=coap+ws://server.example.com:5683/ws/
-   Content-Format: 40
-   Payload:
-   </sensors/temp>;ct=41;rt="temperature-f";if="sensor",
-   </sensors/door>;ct=41;rt="door";if="sensor"
+ Req: POST /rd/1234?lt=600
+    &at=coap+tcp://[2001:db8:f1::2]
+ Content-Format: 40
+ Payload:
+ </temperature>;ct=0;rt="temperature";if="core.s"
 
-   Res: 2.04 Changed
+ Res: 2.04 Changed
          ]]></artwork></figure>
+
+ <t>If a lookup is performed on the same endpoint only 1 alternative transport is indicated:</t>
+ 
+         <figure>
+           <artwork><![CDATA[
+ Req: GET /rd-lookup/ep
+
+ Res: 2.05 Content
+ </rd/1234>;ep="node1";con="coap://[2001:db8:f1::2]:5683";
+    at="coap+tcp://[2001:db8:f1::2]"
+         ]]></artwork></figure>
+
+<t>A UDP client would then see the following in a resource lookup:</t>
+         <figure>
+           <artwork><![CDATA[
+ Req: GET /rd-lookup/res?rt=temperature
+
+ Res: 2.05 Content
+ <coap://[2001:db8:f1::2]/temperature>;ct=0;rt="temperature";if="core.s";
+    anchor="coap://[2001:db8:f1::2]"
+         ]]></artwork></figure>
+ 
 
  </section>
  
