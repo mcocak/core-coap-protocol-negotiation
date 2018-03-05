@@ -156,12 +156,6 @@ full title is longer than 39 characters -->
     "coap://example.org/sensors/temperature" and
     "coap+tcp://example.org/sensors/temperature"</t>
     
-    <t>the path components of the URI differ, should an origin server also allow
-    alternative transport endpoint such as the WebSocket protocol, to be
-    expressed using the path. For example,
-    "coap://example.org/sensors/temperature" and
-    "coap+ws://example.org/ws-endpoint/sensors/temperature"</t>
-
    </list></t>
    
    <t>Without a priori knowledge, clients would be unable to ascertain if two or
@@ -186,9 +180,14 @@ full title is longer than 39 characters -->
     
     <t>New Resource Directory parameter types enabling the above-mentioned features.</t>
     
-    <t>A new CoAP Option called Alternative-Transport that can be used by CoAP clients to discover and retrieve the types of alternative transports available at the origin server, as well as the links describing the transport-specific endpoint address at which CoAP resources are exposed from.
+    <t>A new CoAP Option called Alternative-Transport that can be used by CoAP
+    clients to discover and retrieve the types of alternative transports
+    available at the origin server, as well as the links describing the
+    transport-specific endpoint address at which CoAP resources are exposed
+    from.
 </t>
-    <t>A new CoRE Link attribute for exposing transports and endpoint locations on an origin server on a per-resource basis.</t>
+    <t>A new CoRE Link attribute for exposing transports and endpoint locations
+    on an origin server on a per-resource basis.</t>
 
    </list></t>
 
@@ -278,9 +277,11 @@ full title is longer than 39 characters -->
     represents this event, where the HTTP client performs a GET request to
     "http://proxy.example.com/coap+tcp://example.org/sensors/temperature". When
     the proxy receives the request, instead of immediately retrieving the
-    temperature resource again over TCP, it first verifies either from the Resource Directory or directly from the server,
-    whether the cached resource retrieved over UDP is a valid equivalent
-    representation of the resource requested by the HTTP client over TCP. Upon confirmation, the proxy is able to supply the same cached
+    temperature resource again over TCP, it first verifies either from the
+    Resource Directory or directly from the server, whether the cached resource
+    retrieved over UDP is a valid equivalent representation of the resource
+    requested by the HTTP client over TCP. Upon confirmation, the proxy is able
+    to supply the same cached
     representation to the HTTP client as well (arrow 4).</t>
    </section>
 
@@ -414,7 +415,9 @@ full title is longer than 39 characters -->
 
  <t>The "at" parameter extends the Resource Directory's Registration and Update interfaces.</t>
  
-  <t>The following example shows a type T1 endpoint registering its resources and advertising its ability to use TCP and WebSockets as alternative transports:</t>
+  <t>The following example shows a type T1 endpoint registering its resources
+  and advertising its ability to use TCP and WebSockets as alternative
+  transports:</t>
  
          <figure>
            <artwork><![CDATA[
@@ -441,7 +444,9 @@ full title is longer than 39 characters -->
          ]]></artwork></figure>
 
  
- <t>The next example shows the same endpoint updating its registration with a new lifetime and the availability of a single alternative transport for CoAP (in this case TCP):</t>
+ <t>The next example shows the same endpoint updating its registration with a
+ new lifetime and the availability of a single alternative transport for CoAP
+ (in this case TCP):</t>
  
          <figure>
            <artwork><![CDATA[
@@ -480,7 +485,9 @@ full title is longer than 39 characters -->
  </section>
  
  <section title="The 'tt' RD parameter">
-  <t>A CoAP client wishing to perform a look-up on the Resource Directory for CoAP servers supporting multiple transports does so by using a new "tt" parameter to query for CoAP alternative
+  <t>A CoAP client wishing to perform a look-up on the Resource Directory for
+  CoAP servers supporting multiple transports does so by using a new "tt"
+  parameter to query for CoAP alternative
   transport URIs.</t>
  
         <figure>
@@ -523,7 +530,9 @@ full title is longer than 39 characters -->
 
          ]]></artwork></figure>
 
-  <t>The following example shows a client performing a lookup for endpoints supporting SMS i.e. discovering SMS transports for sleepy nodes and using SMS to communicate with the endpoint:</t>
+  <t>The following example shows a client performing a lookup for endpoints
+  supporting SMS i.e. discovering SMS transports for sleepy nodes and using SMS
+  to communicate with the endpoint:</t>
         <figure>
            <artwork><![CDATA[
 
@@ -542,7 +551,9 @@ full title is longer than 39 characters -->
   
  
 <section title="CoAP Alternative-Transport Option">
- <t>The CoAP Alternative-Transport Option can be used by CoAP clients and CoAP servers in both Request and Response messages in constrained environments where a CoRE Resource Directory is not present. 
+ <t>The CoAP Alternative-Transport Option can be used by CoAP clients and CoAP
+ servers in both Request and Response messages in constrained environments where
+ a CoRE Resource Directory is not present. 
 </t>
  <t><xref target="Option-description"/> depicts the properties of the Alternative-Transport Option.</t>
  
@@ -765,7 +776,7 @@ Client                                  Server
 
  
  <section anchor="Acknowledgements" title="Acknowledgements">
-   <t>Thanks to Jaime Jimenez, Christian Amsuss and Klaus Hartke for comments
+   <t>Thanks to Jaime Jimenez, Christian Amsuess and Klaus Hartke for comments
    and reviewing this draft. Teemu Savolainen was involved in initial
    discussions about protocol negotations and lifetime values. Zach Shelby
    provided significant suggestions on how the Resource Directory can be
@@ -810,6 +821,11 @@ Client                                  Server
 
  <section title="Change Log">
  
+<section title="From -07 to -08">
+ <t>Added example of energy constrained CoAP server</t>
+ <t>Updated examples of using "at" and "tt"</t>
+ <t>"at" and "ol" are no longer comma-separated URI lists.</t>
+</section>
 <section title="From -06 to -07">
  <t>Added support for 'ol' Link attribute</t>
 </section>
