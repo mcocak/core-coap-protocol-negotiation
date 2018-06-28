@@ -44,7 +44,7 @@
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
 
-<rfc category="info" docName="draft-silverajan-core-coap-protocol-negotiation-08" ipr="trust200902">
+<rfc category="info" docName="draft-silverajan-core-coap-protocol-negotiation-09" ipr="trust200902">
  <!-- category values: std, bcp, info, exp, and historic
     ipr values: trust200902, noModificationTrust200902, noDerivativesTrust200902,
        or pre5378Trust200902
@@ -401,13 +401,13 @@ full title is longer than 39 characters -->
         <figure>
            <artwork><![CDATA[
  
-   +-----------+-------+---------------+-------------------------------+
-   | Name      | Query | Validity      | Description                   |
-   +-----------+-------+---------------+-------------------------------+
-   | CoAP      | at    |     URI       | URI (scheme, address, port    |
-   | Transport |       |               | and path) available           |
-   | URI List  |       |               | at the server                 |
-   +-----------+-------+---------------+-------------------------------+  
+   +-----------+-------+---------------+---------------------+------------+
+   | Name      | Query | Validity      | Description         |   Value    |
+   +-----------+-------+---------------+---------------------+------------+
+   | CoAP      | at    |     URI       | URI scheme, address | xsd:string |
+   | Transport |       |               | port and path       |            |
+   | URI       |       |               | on the server       |            |
+   +-----------+-------+---------------+---------------------+------------+  
 
  Table 2: The "at" RD parameter
  
@@ -486,31 +486,33 @@ full title is longer than 39 characters -->
  
  <section title="The 'tt' RD parameter">
   <t>A CoAP client wishing to perform a look-up on the Resource Directory for
-  CoAP servers supporting multiple transports does so by using a new "tt"
-  parameter to query for CoAP alternative
+  CoAP servers supporting multiple transports does so by using one or more "tt"
+  parameters to query for CoAP alternative
   transport URIs.</t>
  
         <figure>
            <artwork><![CDATA[
  
-   +-----------+-------+---------------+-------------------------------+
-   | Name      | Query | Validity      | Description                   |
-   +-----------+-------+---------------+-------------------------------+
-   | CoAP      | tt    |               | Transport type                |
-   | Transport |       |               | requested by                  |
-   | Type      |       |               | the client                    |
-   +-----------+-------+---------------+-------------------------------+  
+   +-----------+-------+-----------------------------+------------+
+   | Name      | Query | Validity | Description      |   Value    |
+   +-----------+-------+-----------------------------+------------+
+   | CoAP      | tt    |          | Transport type   | xsd:string |
+   | Transport |       |          | requested by     |            |
+   | Type      |       |          | the client       |            |
+   +-----------+-------+-----------------------------+------------+  
 
  Table 3: The "tt" RD parameter
  
          ]]></artwork></figure>
 
- <t>The "tt" parameter extends the Resource Directory's rd-lookup interface.</t>
+ <t>The "tt" parameter extends the Resource Directory's rd-lookup interface. The
+ "tt" parameter queries existing registrations, and MUST NOT be used with the
+ Resource Directory's registration and update interfaces.</t>
  <t>The following example shows a client performing a lookup for endpoints supporting TCP:</t>
         <figure>
            <artwork><![CDATA[
 
-   Req: GET /rd-lookup/ep?tt=tcp
+   Req: GET /rd-lookup/ep?tt="coap+tcp"
 
    Res: 2.05 Content
    </rd/1234>;con="coap+tcp://[2001:db8:f1::2]";ep="node1";ct="40"
@@ -522,7 +524,7 @@ full title is longer than 39 characters -->
         <figure>
            <artwork><![CDATA[
 
-  Req: GET /rd-lookup/res?rt=temperature&tt=tcp
+  Req: GET /rd-lookup/res?rt=temperature&tt="coap+tcp"
 
   Res: 2.05 Content
   <coap+tcp://[2001:db8:f1::2]/temperature>;ct=0;rt="temperature";
@@ -536,7 +538,7 @@ full title is longer than 39 characters -->
         <figure>
            <artwork><![CDATA[
 
-   Req: GET /rd-lookup/ep?et=oic.d.switch&tt=sms
+   Req: GET /rd-lookup/ep?et=oic.d.switch&tt="coap+sms"
 
    Res: 2.05 Content
    </rd/2345>;con="coap+sms://0015105550101/";ep="node5";
@@ -642,7 +644,7 @@ Client                                  Server
 
 <t>Alternatively, a client can also request for the availability of a specific
 transport on the server, as shown in <xref target="Option-TCP"/>. Here, the CoAP
-Request contains an Alternative-Transport Option with the value set to request
+Request contains Alternative-Transport Options with values set to request
 the Base URIs for TCP-based endpoints.</t>
 
          <figure align="center"
@@ -656,7 +658,8 @@ Client                                  Server
    +                                       |
    |  GET /temperature                     |
    |  Token: 0x64                          |
-   |  Alternative-Transport: tcp           |
+   |  Alternative-Transport: coap+tcp      |
+   |  Alternative-Transport: coaps+tcp     |
    +-------------------------------------->|
    |                                       |
    |    2.05 Content                       |
@@ -721,8 +724,10 @@ Client                                  Server
    locations") attribute is provided. One or more 'ol' attributes are used to
    provide base URIs from which a specific resource can be reached. Allowing
    per-resource endpoint or transport availability enables specific functions
-   such as firmware updates or hardware-specific operations. It also facilities
-   mapping to and from OCF-based resource-specific endpoint descriptions.</t>
+   such as firmware updates or hardware-specific operations. It also facilitates
+   mapping to and from OCF-based resource-specific endpoint descriptions. Note
+   that the use of 'ol' is orthogonal to using 'at' as shown in <xref
+   target="rd_subsec"/>. </t>
      
 <section title="Using /.well-known/core">
 
@@ -740,7 +745,7 @@ Client                                  Server
 
  </section>
 
-<section title="Using CoRE Resource Directory">
+<section anchor="rd_subsec" title="Using CoRE Resource Directory">
 
         <figure>
            <artwork><![CDATA[
@@ -815,10 +820,10 @@ Client                                  Server
 
  
  <section anchor="Acknowledgements" title="Acknowledgements">
-   <t>Thanks to Jaime Jimenez, Christian Amsuess and Klaus Hartke for comments
-   and reviewing this draft. Teemu Savolainen was involved in initial
-   discussions about protocol negotations and lifetime values. Zach Shelby
-   provided significant suggestions on how the Resource Directory can be
+   <t>Thanks to Christian Amsuess, Klaus Hartke, Jaime Jimenez and Jim Schaad
+   for comments and reviewing this draft. Teemu Savolainen was involved in
+   initial discussions about protocol negotations and lifetime values. Zach
+   Shelby provided significant suggestions on how the Resource Directory can be
    employed and extended in place of link attributes and
    relation types.</t>
  </section>
@@ -860,6 +865,9 @@ Client                                  Server
 
  <section title="Change Log">
  
+<section title="From -08 to -09">
+ <t>Using "tt" and "Alternative Transports" updated.</t>
+</section>
 <section title="From -07 to -08">
  <t>Added example of energy constrained CoAP server</t>
  <t>Updated examples of using "at" and "tt"</t>
