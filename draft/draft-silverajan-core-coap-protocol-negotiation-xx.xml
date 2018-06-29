@@ -439,7 +439,7 @@ full title is longer than 39 characters -->
  Req: GET /rd-lookup/ep
 
  Res: 2.05 Content
- </rd/1234>;ep="node1";con="coap://[2001:db8:f1::2]:5683";
+ </rd/1234>;ep="node1";base="coap://[2001:db8:f1::2]:5683";
     at="coap+tcp://[2001:db8:f1::2]";at="coap+ws://server.example.com"
          ]]></artwork></figure>
 
@@ -467,11 +467,11 @@ full title is longer than 39 characters -->
  Req: GET /rd-lookup/ep
 
  Res: 2.05 Content
- </rd/1234>;ep="node1";con="coap://[2001:db8:f1::2]:5683";
+ </rd/1234>;ep="node1";base="coap://[2001:db8:f1::2]:5683";
     at="coap+tcp://[2001:db8:f1::2]"
          ]]></artwork></figure>
 
-<t>A UDP client would then see the following in a resource lookup:</t>
+<t>A resource lookup for UDP client would be returned as the following:</t>
          <figure>
            <artwork><![CDATA[
  Req: GET /rd-lookup/res?rt=temperature
@@ -481,6 +481,16 @@ full title is longer than 39 characters -->
     anchor="coap://[2001:db8:f1::2]"
          ]]></artwork></figure>
  
+
+ <t>A resource lookup for TCP client would be returned as the following:</t>
+         <figure>
+           <artwork><![CDATA[
+ Req: GET /rd-lookup/res?rt=temperature
+
+ Res: 2.05 Content
+ <coap+tcp://[2001:db8:f1::2]/temperature>;ct=0;rt="temperature";if="core.s";
+    anchor="coap+tcp://[2001:db8:f1::2]"
+         ]]></artwork></figure>
 
  </section>
  
@@ -499,7 +509,7 @@ full title is longer than 39 characters -->
    | CoAP      | tt    |          | Transport type   | xsd:string |
    | Transport |       |          | requested by     |            |
    | Type      |       |          | the client       |            |
-   +-----------+-------+-----------------------------+------------+  
+   +-----------+-------+-----------------------------+------------+
 
  Table 3: The "tt" RD parameter
  
@@ -515,7 +525,7 @@ full title is longer than 39 characters -->
    Req: GET /rd-lookup/ep?tt="coap+tcp"
 
    Res: 2.05 Content
-   </rd/1234>;con="coap+tcp://[2001:db8:f1::2]";ep="node1";ct="40"
+   </rd/1234>;at="coap+tcp://[2001:db8:f1::2]";ep="node1";ct="40"
 
          ]]></artwork></figure>
 
@@ -528,7 +538,7 @@ full title is longer than 39 characters -->
 
   Res: 2.05 Content
   <coap+tcp://[2001:db8:f1::2]/temperature>;ct=0;rt="temperature";
-   if="core.s";anchor="coap+tcp://[2001:db8:f1::2]"   
+   if="core.s";anchor="coap+tcp://[2001:db8:f1::2]"
 
          ]]></artwork></figure>
 
@@ -541,9 +551,9 @@ full title is longer than 39 characters -->
    Req: GET /rd-lookup/ep?et=oic.d.switch&tt="coap+sms"
 
    Res: 2.05 Content
-   </rd/2345>;con="coap+sms://0015105550101/";ep="node5";
+   </rd/2345>;at="coap+sms://0015105550101/";ep="node5";
     et="oic.d.switch";ct="40",
-   </rd/4521>;con="coap+sms://0015105550202/";ep="node8";
+   </rd/4521>;at="coap+sms://0015105550202/";ep="node8";
     et="oic.d.switch";ct="40"
 
          ]]></artwork></figure>
@@ -555,7 +565,7 @@ full title is longer than 39 characters -->
 <section title="CoAP Alternative-Transport Option">
  <t>The CoAP Alternative-Transport Option can be used by CoAP clients and CoAP
  servers in both Request and Response messages in constrained environments where
- a CoRE Resource Directory is not present. 
+ a CoRE Resource Directory is not present.
 </t>
  <t><xref target="Option-description"/> depicts the properties of the Alternative-Transport Option.</t>
  
